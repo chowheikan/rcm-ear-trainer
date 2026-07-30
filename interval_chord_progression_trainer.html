@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interval, Chord & Progression Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.2.2/abcjs-basic-min.js"></script>
+    
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f1f5f9;
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Custom Checkbox Logic */
+        .checkbox-custom:checked + div {
+            background-color: #3b82f6; /* blue-500 */
+            border-color: #3b82f6;
+        }
+        .checkbox-custom:checked + div svg {
+            display: block;
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-bottom-color: #3b82f6;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <div class="max-w-5xl w-full">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">
+                RCM Ear Training Hub
+            </h1>
+            <p class="text-slate-400">Level 5 Preparation (Intervals, Chords & Progressions)</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="flex justify-center flex-wrap gap-4 mb-6">
+            <button id="tab-interval" onclick="switchTab('interval')" class="px-6 py-2 bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all flex items-center">
+                <i class="fas fa-arrows-alt-v mr-2"></i> Intervals
+            </button>
+            <button id="tab-chord" onclick="switchTab('chord')" class="px-6 py-2 bg-slate-800 text-slate-400 hover:bg-slate-700 rounded-full font-bold transition-all flex items-center">
+                <i class="fas fa-layer-group mr-2"></i> Chords
+            </button>
+            <button id="tab-progression" onclick="switchTab('progression')" class="px-6 py-2 bg-slate-800 text-slate-400 hover:bg-slate-700 rounded-full font-bold transition-all flex items-center">
+                <i class="fas fa-shoe-prints mr-2"></i> Progressions
+            </button>
+            <button id="tab-playback" onclick="switchTab('playback')" class="px-6 py-2 bg-slate-800 text-slate-400 hover:bg-slate-700 rounded-full font-bold transition-all flex items-center">
+                <i class="fas fa-music mr-2"></i> Playback
+            </button>
+            <button id="tab-sightreading" onclick="switchTab('sightreading')" class="px-6 py-2 bg-slate-800 text-slate-400 hover:bg-slate-700 rounded-full font-bold transition-all flex items-center">
+                <i class="fas fa-glasses mr-2"></i> Sightreading
+            </button>
+        </div>
+
+        <div id="tab-content-interval" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Controls Panel -->
+            <div class="md:col-span-1 glass-panel rounded-2xl p-6 space-y-6 shadow-xl flex flex-col">
+                <div>
+                    <h2 class="text-lg font-semibold mb-3 border-b border-slate-700 pb-2">Active Intervals</h2>
+                    <p class="text-xs text-slate-400 mb-4">Level 5 syllabus requirements are pre-selected.</p>
+                    
+                    <div id="intervalCheckboxes" class="space-y-3">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden interval-checkbox" value="m3" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Minor 3rd</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden interval-checkbox" value="M3" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Major 3rd</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden interval-checkbox" value="P4" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Perfect 4th</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden interval-checkbox" value="P5" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Perfect 5th</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden interval-checkbox" value="m6" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Minor 6th</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden interval-checkbox" value="M6" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Major 6th</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden interval-checkbox" value="P8" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Perfect Octave</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-lg font-semibold mb-3 border-b border-slate-700 pb-2">Playback Mode</h2>
+                    <select id="playbackMode" class="w-full bg-slate-700 text-white rounded-lg p-3 outline-none border border-slate-600 focus:border-blue-500">
+                        <option value="exam">Exam Mode (Melodic -> Harmonic)</option>
+                        <option value="ascending">Ascending Only</option>
+                        <option value="descending">Descending Only</option>
+                        <option value="harmonic">Harmonic (Together)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Interaction Panel -->
+            <div class="md:col-span-2 glass-panel rounded-2xl p-6 flex flex-col items-center justify-center space-y-8 shadow-xl min-h-[400px] relative">
+                
+                <!-- Initial Audio Overlay -->
+                <div id="startOverlay" class="absolute inset-0 bg-slate-900/95 z-20 rounded-2xl flex flex-col items-center justify-center">
+                    <i class="fas fa-headphones-alt text-6xl text-blue-500 mb-4 animate-bounce"></i>
+                    <h2 class="text-2xl font-bold mb-4 text-center">Ready to Train?</h2>
+                    <button id="initAudioBtn" onclick="initAudio()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-full font-bold text-lg shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105 flex items-center">
+                        <span id="initAudioText">Load HQ Piano & Start</span>
+                        <div id="initAudioLoader" class="loader w-5 h-5 ml-3 hidden"></div>
+                    </button>
+                    <p class="text-slate-400 text-sm mt-4 max-w-xs text-center">Loading acoustic piano samples may take a few seconds.</p>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="text-center w-full">
+                    <button id="playBtn" onclick="generateAndPlayInterval()" class="w-full max-w-xs mx-auto py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 rounded-2xl font-bold text-xl shadow-lg shadow-emerald-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3">
+                        <i class="fas fa-play"></i> Play Random Interval
+                    </button>
+                    
+                    <button id="replayBtn" onclick="playIntervalNotes()" class="mt-4 px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-full font-medium transition-colors hidden mx-auto flex items-center justify-center gap-2">
+                        <i class="fas fa-redo"></i> Replay
+                    </button>
+                </div>
+
+                <!-- Answer Display Area -->
+                <div id="displayArea" class="w-full flex-1 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-500">
+                    
+                    <button id="revealBtn" onclick="revealIntervalAnswer()" class="px-6 py-3 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded-xl font-medium transition-colors mb-4">
+                        <i class="fas fa-eye mr-2"></i> Reveal Answer
+                    </button>
+
+                    <div id="answerArea" class="w-full text-center hidden flex-col items-center space-y-4">
+                        <div class="flex items-center justify-center space-x-6 bg-slate-800/80 border border-slate-600 w-full rounded-xl p-6">
+                            <div class="text-4xl font-bold text-white" id="note1Display">C4</div>
+                            <div class="text-2xl text-slate-500" id="directionIcon"><i class="fas fa-arrow-right"></i></div>
+                            <div class="text-4xl font-bold text-white" id="note2Display">G4</div>
+                        </div>
+                        <div class="bg-blue-900/30 border border-blue-500/30 w-full rounded-xl p-4">
+                            <h3 class="text-blue-400 text-sm font-semibold uppercase tracking-wider mb-1">Interval</h3>
+                            <div id="intervalNameDisplay" class="text-2xl font-bold text-white">Perfect 5th</div>
+                        </div>
+                        <div class="bg-indigo-900/30 border border-indigo-500/30 w-full rounded-xl p-4 text-left">
+                            <h4 class="text-indigo-400 text-sm font-semibold mb-1"><i class="fas fa-lightbulb mr-1"></i> Mnemonic Hint</h4>
+                            <p id="intervalHintDisplay" class="text-slate-200 font-medium"></p>
+                        </div>
+                        
+                        <!-- Score Display Area for Interval -->
+                        <div id="intervalScore" class="bg-slate-100 text-slate-900 rounded-xl w-full p-2 overflow-x-auto flex justify-center min-h-[120px]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-content-chord" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
+            
+            <div class="md:col-span-1 glass-panel rounded-2xl p-6 space-y-6 shadow-xl flex flex-col">
+                <div>
+                    <h2 class="text-lg font-semibold mb-3 border-b border-slate-700 pb-2">Chord Types</h2>
+                    <p class="text-xs text-slate-400 mb-4">Level 5 requires identifying these root position chords.</p>
+                    
+                    <div id="chordCheckboxes" class="space-y-3">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden chord-checkbox" value="major" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Major Triad</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden chord-checkbox" value="minor" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Minor Triad</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden chord-checkbox" value="dom7" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">Dominant 7th</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 glass-panel rounded-2xl p-6 flex flex-col items-center justify-center space-y-8 shadow-xl min-h-[400px] relative">
+                
+                <div class="text-center w-full mt-8">
+                    <button id="playChordBtn" onclick="generateAndPlayChord()" class="w-full max-w-xs mx-auto py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 rounded-2xl font-bold text-xl shadow-lg shadow-purple-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3">
+                        <i class="fas fa-play"></i> Play Random Chord
+                    </button>
+                    
+                    <button id="replayChordBtn" onclick="playChordNotes()" class="mt-4 px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-full font-medium transition-colors hidden mx-auto flex items-center justify-center gap-2">
+                        <i class="fas fa-redo"></i> Replay
+                    </button>
+                </div>
+
+                <div id="chordDisplayArea" class="w-full flex-1 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-500">
+                    
+                    <button id="revealChordBtn" onclick="revealChordAnswer()" class="px-6 py-3 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded-xl font-medium transition-colors mb-4">
+                        <i class="fas fa-eye mr-2"></i> Reveal Answer
+                    </button>
+
+                    <div id="chordAnswerArea" class="w-full text-center hidden flex-col items-center space-y-4">
+                        <div class="bg-slate-800/80 border border-slate-600 w-full rounded-xl p-6">
+                            <h3 class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Chord Quality</h3>
+                            <div id="chordNameDisplay" class="text-4xl font-bold text-purple-400 mb-2">Major Triad</div>
+                            <div id="chordNotesDisplay" class="text-slate-300 font-mono text-sm bg-slate-900/50 inline-block px-3 py-1 rounded-full">C4 - E4 - G4</div>
+                        </div>
+
+                        <div class="bg-pink-900/30 border border-pink-500/30 w-full rounded-xl p-4 text-left">
+                            <h4 class="text-pink-400 text-sm font-semibold mb-1"><i class="fas fa-lightbulb mr-1"></i> Color / Emotion</h4>
+                            <p id="chordFeelingDisplay" class="text-slate-200 font-medium"></p>
+                        </div>
+                        
+                        <!-- Score Display Area for Chord -->
+                        <div id="chordScore" class="bg-slate-100 text-slate-900 rounded-xl w-full p-2 overflow-x-auto flex justify-center min-h-[120px]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-content-progression" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
+            
+            <div class="md:col-span-1 glass-panel rounded-2xl p-6 space-y-6 shadow-xl flex flex-col">
+                <div>
+                    <h2 class="text-lg font-semibold mb-3 border-b border-slate-700 pb-2">Chord Progressions</h2>
+                    <p class="text-xs text-slate-400 mb-4">Level 5 RCM requires identifying these progressions in Major keys, with ascending bass.</p>
+                    
+                    <div id="progressionCheckboxes" class="space-y-3">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden progression-checkbox" value="I-IV-I" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">I - IV - I</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden progression-checkbox" value="I-V-I" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">I - V - I</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 glass-panel rounded-2xl p-6 flex flex-col items-center justify-center space-y-8 shadow-xl min-h-[400px] relative">
+                
+                <div class="text-center w-full mt-8">
+                    <button id="playProgressionBtn" onclick="generateAndPlayProgression()" class="w-full max-w-xs mx-auto py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-2xl font-bold text-xl shadow-lg shadow-amber-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3">
+                        <i class="fas fa-play"></i> Play Progression
+                    </button>
+                    
+                    <button id="replayProgressionBtn" onclick="playProgressionNotes()" class="mt-4 px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-full font-medium transition-colors hidden mx-auto flex items-center justify-center gap-2">
+                        <i class="fas fa-redo"></i> Replay
+                    </button>
+                </div>
+
+                <div id="progressionDisplayArea" class="w-full flex-1 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-500">
+                    
+                    <button id="revealProgressionBtn" onclick="revealProgressionAnswer()" class="px-6 py-3 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded-xl font-medium transition-colors mb-4">
+                        <i class="fas fa-eye mr-2"></i> Reveal Answer
+                    </button>
+
+                    <div id="progressionAnswerArea" class="w-full text-center hidden flex-col items-center space-y-4">
+                        <div class="bg-slate-800/80 border border-slate-600 w-full rounded-xl p-6">
+                            <h3 class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Chord Progression</h3>
+                            <div id="progressionNameDisplay" class="text-4xl font-bold text-amber-400 mb-2">I - IV - I</div>
+                        </div>
+
+                        <div class="bg-orange-900/30 border border-orange-500/30 w-full rounded-xl p-4 text-left">
+                            <h4 class="text-orange-400 text-sm font-semibold mb-1"><i class="fas fa-lightbulb mr-1"></i> Listening Hint</h4>
+                            <p id="progressionFeelingDisplay" class="text-slate-200 font-medium"></p>
+                        </div>
+                        
+                        <!-- Score Display Area for Progression -->
+                        <div id="progressionScore" class="bg-slate-100 text-slate-900 rounded-xl w-full p-2 overflow-x-auto flex justify-center min-h-[120px]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAYBACK TAB -->
+        <div id="tab-content-playback" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
+            
+            <div class="md:col-span-1 glass-panel rounded-2xl p-6 space-y-6 shadow-xl flex flex-col">
+                <div>
+                    <h2 class="text-lg font-semibold mb-3 border-b border-slate-700 pb-2">Keys (Level 5)</h2>
+                    <p class="text-xs text-slate-400 mb-4">Select the scales to generate melodies from.</p>
+                    <div id="playbackKeyCheckboxes" class="space-y-3 mb-6">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-key-checkbox" value="A-maj" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">A Major</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-key-checkbox" value="E-maj" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">E Major</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-key-checkbox" value="A-min" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">A Minor</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-key-checkbox" value="E-min" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">E Minor</span>
+                        </label>
+                    </div>
+
+                    <h2 class="text-lg font-semibold mb-3 border-b border-slate-700 pb-2">Time Signatures</h2>
+                    <div id="playbackTimeCheckboxes" class="space-y-3">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-time-checkbox" value="2/4" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">2/4</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-time-checkbox" value="3/4" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">3/4</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-time-checkbox" value="4/4" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">4/4</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" class="checkbox-custom hidden playback-time-checkbox" value="6/8" checked>
+                            <div class="w-5 h-5 rounded border-2 border-slate-500 mr-3 flex items-center justify-center transition-colors group-hover:border-blue-400">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-slate-300 group-hover:text-white transition-colors">6/8</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 glass-panel rounded-2xl p-6 flex flex-col items-center justify-center space-y-8 shadow-xl min-h-[400px] relative">
+                
+                <div class="text-center w-full mt-8">
+                    <!-- 考試模擬：預先提示調性 -->
+                    <div id="playbackPreInfo" class="mb-6 opacity-0 transition-opacity duration-300">
+                        <span class="bg-slate-800/80 border border-slate-600 px-6 py-2 rounded-full text-lg font-semibold text-slate-300 shadow-md">
+                            <i class="fas fa-key text-rose-400 mr-2"></i> Examiner says: "The key is <span id="preInfoKey" class="text-rose-400 font-bold"></span>"
+                        </span>
+                    </div>
+
+                    <button id="playPlaybackBtn" onclick="generateAndPlayPlayback()" class="w-full max-w-xs mx-auto py-4 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 rounded-2xl font-bold text-xl shadow-lg shadow-rose-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3">
+                        <i class="fas fa-play"></i> Play Melody
+                    </button>
+                    
+                    <button id="replayPlaybackBtn" onclick="playPlaybackNotes()" class="mt-4 px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-full font-medium transition-colors hidden mx-auto flex items-center justify-center gap-2">
+                        <i class="fas fa-redo"></i> Replay
+                    </button>
+                </div>
+
+                <div id="playbackDisplayArea" class="w-full flex-1 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-500">
+                    
+                    <button id="revealPlaybackBtn" onclick="revealPlaybackAnswer()" class="px-6 py-3 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded-xl font-medium transition-colors mb-4">
+                        <i class="fas fa-eye mr-2"></i> Reveal Answer
+                    </button>
+
+                    <div id="playbackAnswerArea" class="w-full text-center hidden flex-col items-center space-y-4">
+                        <div class="bg-slate-800/80 border border-slate-600 w-full rounded-xl p-6 flex justify-around">
+                            <div>
+                                <h3 class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Key</h3>
+                                <div id="playbackKeyDisplay" class="text-3xl font-bold text-rose-400">A Major</div>
+                            </div>
+                            <div>
+                                <h3 class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Time</h3>
+                                <div id="playbackTimeDisplay" class="text-3xl font-bold text-pink-400">4/4</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Score Display Area for Playback -->
+                        <div id="playbackScore" class="bg-slate-100 text-slate-900 rounded-xl w-full p-2 overflow-x-auto flex justify-center min-h-[120px]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIGHTREADING TAB -->
+        <div id="tab-content-sightreading" class="grid grid-cols-1 gap-6 hidden">
+            
+            <div class="glass-panel rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center space-y-8 shadow-xl min-h-[400px] relative">
+                
+                <div class="text-center w-full max-w-2xl">
+                    <h2 class="text-2xl font-bold text-white mb-2">Vivaldi: Concerto in G Minor (RV 317)</h2>
+                    <p class="text-slate-400 mb-6">Custom 3/4 Transposition of Bars 29-33 for Sightreading Practice.</p>
+                    
+                    <div class="flex items-center justify-center space-x-4 mb-8">
+                        <span class="bg-slate-800 border border-slate-600 px-4 py-2 rounded-full text-sm font-semibold text-emerald-400 shadow-md">
+                            <i class="fas fa-key mr-2"></i> Key: G Minor
+                        </span>
+                        <span class="bg-slate-800 border border-slate-600 px-4 py-2 rounded-full text-sm font-semibold text-blue-400 shadow-md">
+                            <i class="fas fa-clock mr-2"></i> Time: 3/4
+                        </span>
+                    </div>
+
+                    <!-- Sightreading Score Display Area -->
+                    <div id="sightreadingScoreArea" class="bg-slate-100 text-slate-900 rounded-xl w-full p-4 overflow-x-auto flex justify-center min-h-[150px] mb-8 shadow-inner">
+                        <!-- ABC JS will render here -->
+                    </div>
+
+                    <button id="playSightreadingBtn" onclick="playSightreading()" class="w-full max-w-xs mx-auto py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-2xl font-bold text-xl shadow-lg shadow-cyan-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3">
+                        <i class="fas fa-play"></i> Play Melody
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let sampler;
+        let isAudioInitialized = false;
+
+        // Dictionaries
+        const intervalsData = {
+            'm3': { name: 'Minor 3rd', semitones: 3, hint: 'Greensleeves (開頭) / 搖籃曲' },
+            'M3': { name: 'Major 3rd', semitones: 4, hint: 'Vivaldi Spring (春) / 門鈴聲' },
+            'P4': { name: 'Perfect 4th', semitones: 5, hint: '中國國歌 / Here Comes the Bride' },
+            'P5': { name: 'Perfect 5th', semitones: 7, hint: 'Twinkle Twinkle Little Star / Star Wars' },
+            'm6': { name: 'Minor 6th', semitones: 8, hint: 'Love Story (Where Do I Begin) / Romeo & Juliet (Love Theme)' },
+            'M6': { name: 'Major 6th', semitones: 9, hint: 'My Bonnie Lies Over the Ocean' },
+            'P8': { name: 'Perfect Octave', semitones: 12, hint: 'Somewhere Over the Rainbow' }
+        };
+
+        const chordsData = [
+            { id: 'major', name: "Major Triad", offsets: [0, 4, 7], feeling: "開心、陽光、穩定、光明。好似英雄出場或者圓滿結局 ☀️" },
+            { id: 'minor', name: "Minor Triad", offsets: [0, 3, 7], feeling: "傷心、灰暗、憂鬱、神秘。好似悲劇發生、落雨天 🌧️" },
+            { id: 'dom7', name: "Dominant 7th", offsets: [0, 4, 7, 10], feeling: "厚實、不穩定、有強烈張力 (Tension) 想解決。好似魔術師「Ta-da!」/ 少少爵士味 🎩" }
+        ];
+
+        const progressionsData = [
+            { id: 'I-IV-I', name: "I - IV - I", feeling: "「阿們」結尾 (Amen Cadence) ⛪：平和、寬廣、似教會詩歌嘅結尾，冇咩攻擊性。" },
+            { id: 'I-V-I', name: "I - V - I", feeling: "古典結尾 (Authentic Cadence) 🏛️：強烈、肯定、似交響樂完場。中間嗰吓 V (屬和弦) 會有一種想推返去 I 嘅張力。" }
+        ];
+
+        const playbackKeys = {
+            'A-maj': { name: 'A Major', abcKey: 'A', scale: [69, 71, 73, 74, 76, 81] }, // A4 to A5
+            'E-maj': { name: 'E Major', abcKey: 'E', scale: [64, 66, 68, 69, 71, 76] }, // E4 to E5
+            'A-min': { name: 'A Minor', abcKey: 'Am', scale: [69, 71, 72, 74, 76, 81] },
+            'E-min': { name: 'E Minor', abcKey: 'Em', scale: [64, 66, 67, 69, 71, 76] }
+        };
+
+        const playbackTimes = {
+            '2/4': { 
+                name: '2/4', 
+                bpm: 80, 
+                rhythms: [
+                    [1, 0.5, 0.5, 1, 1, 2], // 6 notes
+                    [0.5, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 2], // 8 notes
+                    [1.5, 0.5, 0.5, 0.5, 1, 2], // 6 notes (dotted)
+                    [0.5, 0.5, 1, 1, 1, 2] // 6 notes
+                ] 
+            },
+            '3/4': { 
+                name: '3/4', 
+                bpm: 90, 
+                rhythms: [
+                    [1, 0.5, 0.5, 1, 1.5, 0.5, 1, 3], // 8 notes
+                    [0.5, 0.5, 1, 1, 1, 1, 1, 3], // 8 notes
+                    [2, 1, 0.5, 0.5, 1, 1, 3], // 7 notes
+                    [1.5, 0.5, 1, 1, 2], // 5 notes (dotted)
+                    [1, 1, 1, 0.5, 0.5, 2] // 6 notes
+                ] 
+            },
+            '4/4': { 
+                name: '4/4', 
+                bpm: 100, 
+                rhythms: [
+                    [1, 0.5, 0.5, 1, 1, 4], // 6 notes
+                    [1.5, 0.5, 1, 1, 1, 1, 2], // 7 notes
+                    [0.5, 0.5, 1, 0.5, 0.5, 1, 4], // 7 notes
+                    [1, 1, 0.5, 0.5, 1, 1.5, 0.5, 2] // 8 notes
+                ] 
+            },
+            '6/8': { 
+                name: '6/8', 
+                bpm: 90, 
+                rhythms: [
+                    [1.5, 0.5, 0.5, 0.5, 3], // 5 notes
+                    [0.5, 0.5, 0.5, 1.5, 1.0, 0.5, 1.5, 3], // 8 notes
+                    [1.0, 0.5, 0.5, 0.5, 0.5, 3], // 6 notes
+                    [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 3], // 7 notes
+                    [1.5, 1.0, 0.5, 1.5, 1.5] // 5 notes
+                ] 
+            }
+        };
+
+        // State Variables
+        let currentIntervalInfo = null;
+        let currentNotes = [];
+        let currentExamDirection = ''; 
+
+        let currentChordInfo = null;
+        let currentChordNotes = [];
+
+        let currentProgressionInfo = null;
+        let currentProgressionNotes = [];
+
+        let currentPlaybackInfo = { key: null, time: null, melody: [] };
+        let clickSynth = null;
+
+        let isAudioLoading = false;
+
+        /* --- MUSIC NOTATION HELPER --- */
+        // Convert Tone.js Note (e.g. C#4) to ABC Notation (e.g. ^C)
+        function toABC(noteStr) {
+            const match = noteStr.match(/^([A-G])([#b]?)(\d)$/);
+            if (!match) return "";
+            let name = match[1];
+            let acc = match[2];
+            let oct = parseInt(match[3]);
+
+            let abcAcc = acc === '#' ? '^' : (acc === 'b' ? '_' : '');
+            let abcNote = "";
+
+            if (oct === 3) abcNote = name + ",";
+            else if (oct === 4) abcNote = name;
+            else if (oct === 5) abcNote = name.toLowerCase();
+            else if (oct === 6) abcNote = name.toLowerCase() + "'";
+            else abcNote = name;
+
+            return abcAcc + abcNote;
+        }
+
+        function renderScore(elementId, abcString) {
+            ABCJS.renderAbc(elementId, abcString, {
+                responsive: "resize",
+                scale: 1.2,
+                staffwidth: 300,
+                paddingbottom: 0,
+                paddingtop: 10,
+                paddingright: 20,
+                paddingleft: 20,
+                foregroundColor: "#0f172a" 
+            });
+        }
+
+        // Formatting HTML for Notes (e.g. C4 -> C<sub>4</sub>)
+        function formatNote(noteStr) {
+            return noteStr.replace(/(\d)/, '<sub class="text-xs text-slate-400 ml-0.5">$1</sub>');
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            const tabs = ['interval', 'chord', 'progression', 'playback', 'sightreading'];
+            
+            tabs.forEach(t => {
+                document.getElementById('tab-content-' + t).classList.add('hidden');
+                document.getElementById('tab-' + t).className = 'px-6 py-2 bg-slate-800 text-slate-400 hover:bg-slate-700 rounded-full font-bold transition-all flex items-center';
+            });
+            
+            document.getElementById('tab-content-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).className = 'px-6 py-2 bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all flex items-center';
+            
+            // Render the sightreading score if navigating to it
+            if (tabId === 'sightreading') {
+                renderSightreadingScore();
+            }
+        }
+
+        // Initialize Tone.js with HQ Piano
+        async function initAudio() {
+            if (isAudioInitialized || isAudioLoading) return;
+            isAudioLoading = true;
+            
+            const btnText = document.getElementById('initAudioText');
+            const loader = document.getElementById('initAudioLoader');
+            
+            if (btnText) btnText.innerText = "Loading Piano...";
+            if (loader) loader.classList.remove('hidden');
+            
+            await Tone.start();
+            
+            // Load Salamander Grand Piano Samples
+            sampler = new Tone.Sampler({
+                urls: {
+                    C3: "C3.mp3",
+                    "D#3": "Ds3.mp3",
+                    "F#3": "Fs3.mp3",
+                    A3: "A3.mp3",
+                    C4: "C4.mp3",
+                    "D#4": "Ds4.mp3",
+                    "F#4": "Fs4.mp3",
+                    A4: "A4.mp3",
+                    C5: "C5.mp3",
+                    "D#5": "Ds5.mp3",
+                    "F#5": "Fs5.mp3",
+                    A5: "A5.mp3",
+                },
+                release: 1,
+                baseUrl: "https://tonejs.github.io/audio/salamander/"
+            }).toDestination();
+
+            clickSynth = new Tone.MembraneSynth({
+                pitchDecay: 0.008,
+                octaves: 2,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 }
+            }).toDestination();
+            clickSynth.volume.value = -10;
+
+            await Tone.loaded();
+
+            isAudioInitialized = true;
+            isAudioLoading = false;
+            
+            const overlay = document.getElementById('startOverlay');
+            if(overlay) overlay.style.display = 'none';
+        }
+
+        /* --- INTERVAL LOGIC --- */
+        async function generateAndPlayInterval() {
+            if (!isAudioInitialized) {
+                const btn = document.getElementById('playBtn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
+                await initAudio();
+                btn.innerHTML = originalHtml;
+            }
+
+            const checkboxes = document.querySelectorAll('.interval-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert("Please select at least one interval to test!");
+                return;
+            }
+            
+            const selectedIntervals = Array.from(checkboxes).map(cb => cb.value);
+            const randomType = selectedIntervals[Math.floor(Math.random() * selectedIntervals.length)];
+            currentIntervalInfo = intervalsData[randomType];
+
+            // RCM Level 5 range roughly G3 to G5
+            const rootMidi = Math.floor(Math.random() * 15) + 55; 
+            const topMidi = rootMidi + currentIntervalInfo.semitones;
+            
+            const rootNote = Tone.Frequency(rootMidi, "midi").toNote();
+            const topNote = Tone.Frequency(topMidi, "midi").toNote();
+            
+            currentNotes = [rootNote, topNote];
+
+            // Decide direction randomly for Exam Mode
+            currentExamDirection = Math.random() > 0.5 ? 'ascending' : 'descending';
+
+            // Reset UI
+            hideIntervalAnswer();
+            document.getElementById('displayArea').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('displayArea').classList.remove('opacity-0');
+            }, 50);
+            
+            document.getElementById('replayBtn').classList.remove('hidden');
+            document.getElementById('playBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next Interval';
+
+            playIntervalNotes();
+        }
+
+        function playIntervalNotes() {
+            if (!sampler || !sampler.loaded || currentNotes.length === 0) return;
+            const now = Tone.now();
+            const mode = document.getElementById('playbackMode').value;
+            
+            const n1 = currentNotes[0];
+            const n2 = currentNotes[1];
+
+            if (mode === 'ascending') {
+                sampler.triggerAttackRelease(n1, "2n", now);
+                sampler.triggerAttackRelease(n2, "2n", now + 1);
+            } else if (mode === 'descending') {
+                sampler.triggerAttackRelease(n2, "2n", now);
+                sampler.triggerAttackRelease(n1, "2n", now + 1);
+            } else if (mode === 'harmonic') {
+                sampler.triggerAttackRelease([n1, n2], "1n", now);
+            } else if (mode === 'exam') {
+                // Exam mode: Melodic -> pause -> Harmonic
+                if (currentExamDirection === 'ascending') {
+                    sampler.triggerAttackRelease(n1, "2n", now);
+                    sampler.triggerAttackRelease(n2, "2n", now + 1);
+                } else {
+                    sampler.triggerAttackRelease(n2, "2n", now);
+                    sampler.triggerAttackRelease(n1, "2n", now + 1);
+                }
+                sampler.triggerAttackRelease([n1, n2], "1n", now + 3);
+            }
+        }
+
+        function revealIntervalAnswer() {
+            if (!currentIntervalInfo) return;
+
+            document.getElementById('revealBtn').classList.add('hidden');
+            const answerArea = document.getElementById('answerArea');
+            answerArea.classList.remove('hidden');
+            answerArea.classList.add('flex');
+
+            const mode = document.getElementById('playbackMode').value;
+            let displayNotes = [currentNotes[0], currentNotes[1]];
+            let arrowHtml = '<i class="fas fa-arrow-right"></i>';
+
+            if (mode === 'descending' || (mode === 'exam' && currentExamDirection === 'descending')) {
+                displayNotes = [currentNotes[1], currentNotes[0]];
+                arrowHtml = '<i class="fas fa-arrow-right text-blue-500"></i>';
+            } else if (mode === 'harmonic') {
+                arrowHtml = '<i class="fas fa-plus text-slate-500"></i>';
+            }
+
+            document.getElementById('note1Display').innerHTML = formatNote(displayNotes[0]);
+            document.getElementById('directionIcon').innerHTML = arrowHtml;
+            document.getElementById('note2Display').innerHTML = formatNote(displayNotes[1]);
+            
+            document.getElementById('intervalNameDisplay').innerText = currentIntervalInfo.name;
+            document.getElementById('intervalHintDisplay').innerText = currentIntervalInfo.hint;
+
+            // Generate Score
+            let abc1 = toABC(currentNotes[0]);
+            let abc2 = toABC(currentNotes[1]);
+            let abc = "X:1\nM:4/4\nL:1/4\nK:C\n";
+            
+            if (mode === 'ascending') {
+                abc += `${abc1}2 ${abc2}2 |]`;
+            } else if (mode === 'descending') {
+                abc += `${abc2}2 ${abc1}2 |]`;
+            } else if (mode === 'harmonic') {
+                abc = "X:1\nM:4/4\nL:1/4\nK:C\n";
+                abc += `[${abc1}${abc2}]4 |]`;
+            } else if (mode === 'exam') {
+                if (currentExamDirection === 'ascending') {
+                    abc += `${abc1}2 ${abc2}2 | [${abc1}${abc2}]4 |]`;
+                } else {
+                    abc += `${abc2}2 ${abc1}2 | [${abc1}${abc2}]4 |]`;
+                }
+            }
+            renderScore("intervalScore", abc);
+        }
+
+        function hideIntervalAnswer() {
+            document.getElementById('revealBtn').classList.remove('hidden');
+            const answerArea = document.getElementById('answerArea');
+            answerArea.classList.add('hidden');
+            answerArea.classList.remove('flex');
+        }
+
+        /* --- CHORD LOGIC --- */
+        async function generateAndPlayChord() {
+            if (!isAudioInitialized) {
+                const btn = document.getElementById('playChordBtn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
+                await initAudio();
+                btn.innerHTML = originalHtml;
+            }
+
+            const checkboxes = document.querySelectorAll('.chord-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert("Please select at least one chord type!");
+                return;
+            }
+            
+            const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+            const randomId = selectedIds[Math.floor(Math.random() * selectedIds.length)];
+            currentChordInfo = chordsData.find(c => c.id === randomId);
+
+            // C3 to E4 root
+            const rootMidi = Math.floor(Math.random() * 16) + 48; 
+            
+            currentChordNotes = currentChordInfo.offsets.map(offset => {
+                return Tone.Frequency(rootMidi + offset, "midi").toNote();
+            });
+
+            // Reset UI
+            hideChordAnswer();
+            document.getElementById('chordDisplayArea').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('chordDisplayArea').classList.remove('opacity-0');
+            }, 50);
+            
+            document.getElementById('replayChordBtn').classList.remove('hidden');
+            document.getElementById('playChordBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next Chord';
+
+            playChordNotes();
+        }
+
+        function playChordNotes() {
+            if (!sampler || !sampler.loaded || currentChordNotes.length === 0) return;
+            sampler.triggerAttackRelease(currentChordNotes, "1n", Tone.now());
+        }
+
+        function revealChordAnswer() {
+            if (!currentChordInfo) return;
+
+            document.getElementById('revealChordBtn').classList.add('hidden');
+            const answerArea = document.getElementById('chordAnswerArea');
+            answerArea.classList.remove('hidden');
+            answerArea.classList.add('flex');
+
+            document.getElementById('chordNameDisplay').innerText = currentChordInfo.name;
+            document.getElementById('chordNotesDisplay').innerHTML = currentChordNotes.map(n => formatNote(n)).join(' - ');
+            document.getElementById('chordFeelingDisplay').innerText = currentChordInfo.feeling;
+
+            // Generate Score
+            let abcNotes = currentChordNotes.map(toABC).join('');
+            let abc = `X:1\nM:4/4\nL:1/4\nK:C\n[${abcNotes}]4 |]`;
+            renderScore("chordScore", abc);
+        }
+
+        function hideChordAnswer() {
+            document.getElementById('revealChordBtn').classList.remove('hidden');
+            const answerArea = document.getElementById('chordAnswerArea');
+            answerArea.classList.add('hidden');
+            answerArea.classList.remove('flex');
+        }
+
+        /* --- PROGRESSION LOGIC --- */
+        async function generateAndPlayProgression() {
+            if (!isAudioInitialized) {
+                const btn = document.getElementById('playProgressionBtn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
+                await initAudio();
+                btn.innerHTML = originalHtml;
+            }
+
+            const checkboxes = document.querySelectorAll('.progression-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert("Please select at least one progression!");
+                return;
+            }
+            
+            const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+            const randomId = selectedIds[Math.floor(Math.random() * selectedIds.length)];
+            currentProgressionInfo = progressionsData.find(p => p.id === randomId);
+
+            // Keep bass clear
+            const rootMidi = Math.floor(Math.random() * 5) + 48; 
+            currentProgressionNotes = [];
+            
+            // I Chord (Root pos, 4 notes)
+            const chordI = [rootMidi, rootMidi + 12, rootMidi + 16, rootMidi + 19].map(m => Tone.Frequency(m, "midi").toNote());
+            currentProgressionNotes.push(chordI);
+            
+            if (currentProgressionInfo.id === 'I-IV-I') {
+                // IV Chord (Ascending bass perfect 4th)
+                const ivRoot = rootMidi + 5;
+                const chordIV = [ivRoot, ivRoot + 12, ivRoot + 16, ivRoot + 19].map(m => Tone.Frequency(m, "midi").toNote());
+                currentProgressionNotes.push(chordIV);
+            } else {
+                // V Chord (Ascending bass perfect 5th)
+                const vRoot = rootMidi + 7;
+                const chordV = [vRoot, vRoot + 12, vRoot + 16, vRoot + 19].map(m => Tone.Frequency(m, "midi").toNote());
+                currentProgressionNotes.push(chordV);
+            }
+            
+            // Back to I Chord
+            currentProgressionNotes.push(chordI);
+
+            // Reset UI
+            hideProgressionAnswer();
+            document.getElementById('progressionDisplayArea').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('progressionDisplayArea').classList.remove('opacity-0');
+            }, 50);
+            
+            document.getElementById('replayProgressionBtn').classList.remove('hidden');
+            document.getElementById('playProgressionBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next Progression';
+
+            playProgressionNotes();
+        }
+
+        function playProgressionNotes() {
+            if (!sampler || !sampler.loaded || currentProgressionNotes.length === 0) return;
+            const now = Tone.now();
+            
+            sampler.triggerAttackRelease(currentProgressionNotes[0], "2n", now);
+            sampler.triggerAttackRelease(currentProgressionNotes[1], "2n", now + 1.2);
+            sampler.triggerAttackRelease(currentProgressionNotes[2], "1n", now + 2.4);
+        }
+
+        function revealProgressionAnswer() {
+            if (!currentProgressionInfo) return;
+
+            document.getElementById('revealProgressionBtn').classList.add('hidden');
+            const answerArea = document.getElementById('progressionAnswerArea');
+            answerArea.classList.remove('hidden');
+            answerArea.classList.add('flex');
+
+            document.getElementById('progressionNameDisplay').innerText = currentProgressionInfo.name;
+            document.getElementById('progressionFeelingDisplay').innerText = currentProgressionInfo.feeling;
+
+            // Generate Score (Grand Staff: Treble for Chords, Bass for Bass Note)
+            let bass1 = toABC(currentProgressionNotes[0][0]);
+            let treble1 = currentProgressionNotes[0].slice(1).map(toABC).join('');
+            
+            let bass2 = toABC(currentProgressionNotes[1][0]);
+            let treble2 = currentProgressionNotes[1].slice(1).map(toABC).join('');
+            
+            let bass3 = toABC(currentProgressionNotes[2][0]);
+            let treble3 = currentProgressionNotes[2].slice(1).map(toABC).join('');
+
+            // %%staves {1 2} creates a piano brace connecting the two staves
+            let abc = `X:1\nM:4/4\nL:1/4\n%%staves {1 2}\nV:1 clef=treble\nV:2 clef=bass\nK:C\n`;
+            abc += `[V:1] [${treble1}]2 [${treble2}]2 | [${treble3}]4 |]\n`;
+            abc += `[V:2] ${bass1}2 ${bass2}2 | ${bass3}4 |]`;
+            
+            renderScore("progressionScore", abc);
+        }
+
+        function hideProgressionAnswer() {
+            document.getElementById('revealProgressionBtn').classList.remove('hidden');
+            const answerArea = document.getElementById('progressionAnswerArea');
+            answerArea.classList.add('hidden');
+            answerArea.classList.remove('flex');
+        }
+
+        /* --- PLAYBACK LOGIC --- */
+        async function generateAndPlayPlayback() {
+            if (!isAudioInitialized) {
+                const btn = document.getElementById('playPlaybackBtn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
+                await initAudio();
+                btn.innerHTML = originalHtml;
+            }
+
+            const keyCheckboxes = document.querySelectorAll('.playback-key-checkbox:checked');
+            const timeCheckboxes = document.querySelectorAll('.playback-time-checkbox:checked');
+            
+            if (keyCheckboxes.length === 0 || timeCheckboxes.length === 0) {
+                alert("Please select at least one Key and one Time Signature!");
+                return;
+            }
+            
+            const randomKeyId = keyCheckboxes[Math.floor(Math.random() * keyCheckboxes.length)].value;
+            const randomTimeId = timeCheckboxes[Math.floor(Math.random() * timeCheckboxes.length)].value;
+            
+            const keyData = playbackKeys[randomKeyId];
+            const timeData = playbackTimes[randomTimeId];
+            
+            // Generate Rhythm
+            const randomRhythmTemplate = timeData.rhythms[Math.floor(Math.random() * timeData.rhythms.length)];
+            
+            // Generate Melody Pitches
+            // Start on 1st, 3rd, 5th, or 8ve
+            const startIndices = [0, 2, 4, 5]; 
+            let currentIndex = startIndices[Math.floor(Math.random() * startIndices.length)];
+            
+            let melody = [];
+            
+            for (let i = 0; i < randomRhythmTemplate.length; i++) {
+                let duration = randomRhythmTemplate[i];
+                
+                // Force the last note to ALWAYS be the tonic (index 0) for resolution
+                if (i === randomRhythmTemplate.length - 1) {
+                    currentIndex = 0;
+                }
+                
+                let noteMidi = keyData.scale[currentIndex];
+                melody.push({ note: Tone.Frequency(noteMidi, "midi").toNote(), duration: duration });
+                
+                // Determine next pitch (step or small skip) for the next iteration
+                let move = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
+                if (move === 0) move = Math.random() > 0.5 ? 1 : -1; // force movement
+                currentIndex += move;
+                
+                // Clamp to scale boundaries
+                if (currentIndex < 0) currentIndex = 0;
+                if (currentIndex > 5) currentIndex = 5;
+            }
+
+            currentPlaybackInfo = {
+                key: keyData,
+                time: timeData,
+                melody: melody
+            };
+
+            // 考試模擬：播放前即時顯示調性
+            document.getElementById('preInfoKey').innerText = keyData.name;
+            document.getElementById('playbackPreInfo').classList.remove('opacity-0');
+
+            // Reset UI
+            hidePlaybackAnswer();
+            document.getElementById('playbackDisplayArea').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('playbackDisplayArea').classList.remove('opacity-0');
+            }, 50);
+            
+            document.getElementById('replayPlaybackBtn').classList.remove('hidden');
+            document.getElementById('playPlaybackBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next Melody';
+
+            playPlaybackNotes();
+        }
+
+        function playPlaybackNotes() {
+            if (!sampler || !sampler.loaded || currentPlaybackInfo.melody.length === 0) return;
+            const now = Tone.now();
+            
+            // 1. Play Tonic Chord
+            const keyData = currentPlaybackInfo.key;
+            const tChord = [keyData.scale[0], keyData.scale[2], keyData.scale[4]].map(m => Tone.Frequency(m, "midi").toNote());
+            sampler.triggerAttackRelease(tChord, "2n", now);
+            
+            // 2. Play Count-in (1 measure)
+            const timeData = currentPlaybackInfo.time;
+            const beatDuration = 60 / timeData.bpm;
+            let countInStart = now + 1.5; // Start count-in after chord rings out
+            
+            let clicks = timeData.name === '6/8' ? 2 : parseInt(timeData.name.split('/')[0]);
+            let clickInterval = timeData.name === '6/8' ? beatDuration * 1.5 : beatDuration;
+            
+            for(let i = 0; i < clicks; i++) {
+                clickSynth.triggerAttackRelease("C4", "32n", countInStart + (i * clickInterval));
+            }
+            
+            // 3. Play Melody
+            let melodyStart = countInStart + (clicks * clickInterval);
+            let currentOffset = 0;
+            
+            currentPlaybackInfo.melody.forEach(item => {
+                let noteDurationInSeconds = item.duration * beatDuration;
+                // Play slightly shorter than full duration for articulation
+                sampler.triggerAttackRelease(item.note, noteDurationInSeconds * 0.9, melodyStart + currentOffset);
+                currentOffset += noteDurationInSeconds;
+            });
+        }
+
+        function revealPlaybackAnswer() {
+            if (currentPlaybackInfo.melody.length === 0) return;
+
+            document.getElementById('revealPlaybackBtn').classList.add('hidden');
+            const answerArea = document.getElementById('playbackAnswerArea');
+            answerArea.classList.remove('hidden');
+            answerArea.classList.add('flex');
+
+            document.getElementById('playbackKeyDisplay').innerText = currentPlaybackInfo.key.name;
+            document.getElementById('playbackTimeDisplay').innerText = currentPlaybackInfo.time.name;
+
+            // Generate Score
+            let abc = `X:1\nM:${currentPlaybackInfo.time.name}\nL:1/8\nK:${currentPlaybackInfo.key.abcKey}\n`;
+            
+            let measureEighths = 0;
+            let capacityEighths = currentPlaybackInfo.time.name === '6/8' ? 6 : parseInt(currentPlaybackInfo.time.name.split('/')[0]) * 2;
+            
+            for (let i = 0; i < currentPlaybackInfo.melody.length; i++) {
+                let item = currentPlaybackInfo.melody[i];
+                let noteStr = toABC(item.note);
+                let durationEighths = item.duration * 2;
+                
+                let durStr = durationEighths === 1 ? "" : durationEighths.toString();
+                abc += noteStr + durStr;
+                
+                measureEighths += durationEighths;
+                
+                // Add barline if measure is full and it's not the very last note
+                if (Math.abs(measureEighths - capacityEighths) < 0.1 && i !== currentPlaybackInfo.melody.length - 1) {
+                    abc += " | ";
+                    measureEighths = 0;
+                } else {
+                    abc += " ";
+                }
+            }
+            abc += "|]";
+            
+            renderScore("playbackScore", abc);
+        }
+
+        function hidePlaybackAnswer() {
+            document.getElementById('revealPlaybackBtn').classList.remove('hidden');
+            const answerArea = document.getElementById('playbackAnswerArea');
+            answerArea.classList.add('hidden');
+            answerArea.classList.remove('flex');
+        }
+
+        /* --- SIGHTREADING LOGIC --- */
+        
+        // The Vivaldi melody transposed to 3/4
+        const sightreadingABC = `X:1
+M:3/4
+L:1/8
+K:Gm
+g d B G d B | G D G>A B G | TA4 G2 |
+G/A/B/c/ d d d e | c c c/d/e/f/ g g | g a ^f ^f g2 |]`;
+
+        const sightreadingNotes = [
+            // Bar 1 (from original bar 29)
+            { note: "G5", duration: 0.5 }, { note: "D5", duration: 0.5 }, { note: "Bb4", duration: 0.5 }, 
+            { note: "G4", duration: 0.5 }, { note: "D5", duration: 0.5 }, { note: "Bb4", duration: 0.5 },
+            // Bar 2 (from original bar 29 & 30)
+            { note: "G4", duration: 0.5 }, { note: "D4", duration: 0.5 }, 
+            { note: "G4", duration: 0.75 }, { note: "A4", duration: 0.25 }, { note: "Bb4", duration: 0.5 }, { note: "G4", duration: 0.5 },
+            // Bar 3 (from original bar 30)
+            { note: "A4", duration: 2.0 }, { note: "G4", duration: 1.0 }, 
+            // Bar 4 (from original bar 33)
+            { note: "G4", duration: 0.25 }, { note: "A4", duration: 0.25 }, { note: "Bb4", duration: 0.25 }, { note: "C5", duration: 0.25 }, 
+            { note: "D5", duration: 0.5 }, { note: "D5", duration: 0.5 }, { note: "D5", duration: 0.5 }, { note: "Eb5", duration: 0.5 },
+            // Bar 5 (from original bar 33 & 34)
+            { note: "C5", duration: 0.5 }, { note: "C5", duration: 0.5 }, 
+            { note: "C5", duration: 0.25 }, { note: "D5", duration: 0.25 }, { note: "Eb5", duration: 0.25 }, { note: "F5", duration: 0.25 }, 
+            { note: "G5", duration: 0.5 }, { note: "G5", duration: 0.5 },
+            // Bar 6 (from original bar 34)
+            { note: "G5", duration: 0.5 }, { note: "A5", duration: 0.5 }, { note: "F#5", duration: 0.5 }, { note: "F#5", duration: 0.5 }, 
+            { note: "G5", duration: 1.0 }
+        ];
+
+        function renderSightreadingScore() {
+            renderScore("sightreadingScoreArea", sightreadingABC);
+        }
+
+        async function playSightreading() {
+            const btn = document.getElementById('playSightreadingBtn');
+            const originalHtml = btn.innerHTML;
+            
+            if (!isAudioInitialized) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
+                await initAudio();
+            }
+
+            btn.innerHTML = '<i class="fas fa-volume-up mr-2"></i> Playing...';
+            btn.classList.add('opacity-75', 'pointer-events-none');
+
+            const now = Tone.now();
+            const bpm = 75; // Sightreading tempo
+            const beatDuration = 60 / bpm;
+            
+            let countInStart = now + 0.5;
+            
+            // Count in 3 beats for 3/4 time
+            for(let i = 0; i < 3; i++) {
+                clickSynth.triggerAttackRelease("C4", "32n", countInStart + (i * beatDuration));
+            }
+            
+            let melodyStart = countInStart + (3 * beatDuration);
+            let currentOffset = 0;
+            
+            sightreadingNotes.forEach(item => {
+                let noteDurationInSeconds = item.duration * beatDuration;
+                sampler.triggerAttackRelease(item.note, noteDurationInSeconds * 0.9, melodyStart + currentOffset);
+                currentOffset += noteDurationInSeconds;
+            });
+
+            // Reset button after playback
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.classList.remove('opacity-75', 'pointer-events-none');
+            }, (melodyStart + currentOffset - now) * 1000 + 500);
+        }
+
+    </script>
+</body>
+</html>
