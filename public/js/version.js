@@ -1,4 +1,4 @@
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.1.1";
 const VERSION_CHECK_INTERVAL = 10 * 60 * 1000;
 
 function checkForUpdates() {

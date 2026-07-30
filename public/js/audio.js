@@ -12,44 +12,43 @@ async function initAudio() {
     if (isAudioInitialized || isAudioLoading) return;
     isAudioLoading = true;
 
-    await Tone.start();
+    // Hard timeout — hide loading screen after 15s no matter what
+    const loadingTimeout = setTimeout(() => hideLoadingScreen(), 15000);
 
-    // Load Salamander Grand Piano Samples
-    sampler = new Tone.Sampler({
-        urls: {
-            C3: "C3.mp3",
-            "D#3": "Ds3.mp3",
-            "F#3": "Fs3.mp3",
-            A3: "A3.mp3",
-            C4: "C4.mp3",
-            "D#4": "Ds4.mp3",
-            "F#4": "Fs4.mp3",
-            A4: "A4.mp3",
-            C5: "C5.mp3",
-            "D#5": "Ds5.mp3",
-            "F#5": "Fs5.mp3",
-            A5: "A5.mp3",
-        },
-        release: 1,
-        baseUrl: "https://tonejs.github.io/audio/salamander/"
-    }).toDestination();
+    try {
+        await Tone.start();
 
-    clickSynth = new Tone.MembraneSynth({
-        pitchDecay: 0.008,
-        octaves: 2,
-        oscillator: { type: "sine" },
-        envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 }
-    }).toDestination();
-    clickSynth.volume.value = -10;
+        sampler = new Tone.Sampler({
+            urls: {
+                C3: "C3.mp3", "D#3": "Ds3.mp3", "F#3": "Fs3.mp3", A3: "A3.mp3",
+                C4: "C4.mp3", "D#4": "Ds4.mp3", "F#4": "Fs4.mp3", A4: "A4.mp3",
+                C5: "C5.mp3", "D#5": "Ds5.mp3", "F#5": "Fs5.mp3", A5: "A5.mp3",
+            },
+            release: 1,
+            baseUrl: "https://tonejs.github.io/audio/salamander/"
+        }).toDestination();
 
-    await Tone.loaded();
+        clickSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.008, octaves: 2,
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+        clickSynth.volume.value = -10;
 
-    isAudioInitialized = true;
-    isAudioLoading = false;
+        await Tone.loaded();
+        isAudioInitialized = true;
+    } catch (err) {
+        console.error("Audio init failed:", err);
+        isAudioLoading = false; // allow retry
+    } finally {
+        clearTimeout(loadingTimeout);
+        hideLoadingScreen();
+    }
+}
 
-    // Hide loading screen
+function hideLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen) {
+    if (loadingScreen && loadingScreen.style.display !== 'none') {
         loadingScreen.classList.add('opacity-0');
         setTimeout(() => { loadingScreen.style.display = 'none'; }, 500);
     }
