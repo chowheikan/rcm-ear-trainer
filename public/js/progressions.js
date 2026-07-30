@@ -45,6 +45,9 @@ async function generateAndPlayProgression() {
 
     currentProgressionNotes.push(chordI);
 
+    // Cut off any previous playback
+    stopAllPlayback();
+
     // Reset UI
     hideProgressionAnswer();
     document.getElementById('replayProgressionBtn').classList.remove('hidden');
@@ -58,6 +61,7 @@ async function generateAndPlayProgression() {
 
 function playProgressionNotes() {
     if (!sampler || !sampler.loaded || currentProgressionNotes.length === 0) return;
+    stopAllPlayback();
     const now = Tone.now();
 
     sampler.triggerAttackRelease(currentProgressionNotes[0], "2n", now);
@@ -99,7 +103,7 @@ async function submitProgressionAnswer(selectedId) {
         }
     });
 
-    await recordAnswer('progression', currentProgressionInfo.id, isCorrect);
+    await recordAnswer('progression', currentProgressionInfo.id, selectedId, isCorrect);
 
     showProgressionDetails();
 }

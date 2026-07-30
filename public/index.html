@@ -32,6 +32,55 @@
         <p class="text-slate-400 text-sm">Preparing acoustic samples</p>
     </div>
 
+    <!-- ========== STATS OVERLAY ========== -->
+    <div id="statsOverlay" class="hidden fixed inset-0 z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeStatsOverlay()"></div>
+
+        <!-- Panel -->
+        <div class="relative w-full sm:max-w-lg bg-slate-900 border border-slate-700 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-700 shrink-0">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-blue-400"></i> Stats
+                </h2>
+                <button onclick="closeStatsOverlay()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 hover:bg-slate-600 transition-colors text-slate-300">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Tab Bar -->
+            <div class="flex gap-2 px-5 py-3 border-b border-slate-700 shrink-0">
+                <button id="otab-interval" onclick="switchOverlayTab('interval')"
+                    class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-full font-semibold transition-all">
+                    Intervals
+                </button>
+                <button id="otab-chord" onclick="switchOverlayTab('chord')"
+                    class="px-4 py-1.5 text-sm bg-slate-700 text-slate-400 hover:bg-slate-600 rounded-full font-semibold transition-all">
+                    Chords
+                </button>
+                <button id="otab-progression" onclick="switchOverlayTab('progression')"
+                    class="px-4 py-1.5 text-sm bg-slate-700 text-slate-400 hover:bg-slate-600 rounded-full font-semibold transition-all">
+                    Progressions
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div id="overlayContent" class="overflow-y-auto px-5 py-4 flex-1">
+                <div class="text-slate-500 text-sm text-center py-8">Loading...</div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-5 py-3 border-t border-slate-700 shrink-0">
+                <button onclick="if(confirm('Reset ALL stats?')) resetStats()"
+                    class="w-full text-center text-slate-600 hover:text-red-400 transition-colors text-sm py-1">
+                    <i class="fas fa-rotate-left mr-1"></i> Reset All Stats
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-5xl w-full">
 
         <!-- ========== HEADER ========== -->

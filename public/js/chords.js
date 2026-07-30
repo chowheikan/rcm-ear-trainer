@@ -34,6 +34,9 @@ async function generateAndPlayChord() {
         return Tone.Frequency(rootMidi + offset, "midi").toNote();
     });
 
+    // Cut off any previous playback
+    stopAllPlayback();
+
     // Reset UI
     hideChordAnswer();
     document.getElementById('replayChordBtn').classList.remove('hidden');
@@ -47,6 +50,7 @@ async function generateAndPlayChord() {
 
 function playChordNotes() {
     if (!sampler || !sampler.loaded || currentChordNotes.length === 0) return;
+    stopAllPlayback();
     sampler.triggerAttackRelease(currentChordNotes, "1n", Tone.now());
 }
 
@@ -84,7 +88,7 @@ async function submitChordAnswer(selectedId) {
         }
     });
 
-    await recordAnswer('chord', currentChordInfo.id, isCorrect);
+    await recordAnswer('chord', currentChordInfo.id, selectedId, isCorrect);
 
     showChordDetails();
 }

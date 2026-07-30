@@ -118,6 +118,9 @@ async function generateAndPlayPlayback() {
         melody: melody
     };
 
+    // Cut off any previous playback
+    stopAllPlayback();
+
     // 考試模擬：播放前即時顯示調性
     document.getElementById('preInfoKey').innerText = keyData.name;
     document.getElementById('playbackPreInfo').classList.remove('opacity-0');
@@ -137,6 +140,7 @@ async function generateAndPlayPlayback() {
 
 function playPlaybackNotes() {
     if (!sampler || !sampler.loaded || currentPlaybackInfo.melody.length === 0) return;
+    stopAllPlayback();
     const now = Tone.now();
 
     // 1. Play Tonic Chord

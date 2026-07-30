@@ -55,6 +55,20 @@ async function initAudio() {
     }
 }
 
+/**
+ * Stops ALL currently playing / scheduled audio immediately.
+ * Call this before every play action to enforce single-playback.
+ */
+function stopAllPlayback() {
+    if (!isAudioInitialized) return;
+    // Cancel all future Tone.js Transport-scheduled events
+    Tone.Transport.cancel();
+    Tone.Transport.stop();
+    // Release all sampler notes immediately
+    if (sampler) sampler.releaseAll();
+    if (clickSynth) clickSynth.triggerRelease();
+}
+
 // Auto-load audio on page entry
 window.addEventListener('load', () => {
     initAudio();

@@ -5,6 +5,9 @@
 
 // Tab Switching
 function switchTab(tabId) {
+    // Cut off any playing audio when switching tabs
+    if (typeof stopAllPlayback === 'function') stopAllPlayback();
+
     const tabs = ['interval', 'chord', 'progression', 'playback'];
 
     tabs.forEach(t => {

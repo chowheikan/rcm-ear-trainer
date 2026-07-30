@@ -45,6 +45,9 @@ async function generateAndPlayInterval() {
     currentNotes = [rootNote, topNote];
     currentExamDirection = Math.random() > 0.5 ? 'ascending' : 'descending';
 
+    // Cut off any previous playback
+    stopAllPlayback();
+
     // Reset UI
     hideIntervalAnswer();
     document.getElementById('replayBtn').classList.remove('hidden');
@@ -58,6 +61,7 @@ async function generateAndPlayInterval() {
 
 function playIntervalNotes() {
     if (!sampler || !sampler.loaded || currentNotes.length === 0) return;
+    stopAllPlayback();
     const now = Tone.now();
     const mode = document.getElementById('playbackMode').value;
 
@@ -120,7 +124,7 @@ async function submitIntervalAnswer(selectedKey) {
     });
 
     // Record stats
-    await recordAnswer('interval', currentIntervalKey, isCorrect);
+    await recordAnswer('interval', currentIntervalKey, selectedKey, isCorrect);
 
     // Show answer details
     showIntervalDetails();
