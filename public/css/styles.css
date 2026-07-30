@@ -14,11 +14,16 @@ body {
 
 /* Custom Checkbox Logic */
 .checkbox-custom:checked + div {
-    background-color: #3b82f6; /* blue-500 */
+    background-color: #3b82f6;
     border-color: #3b82f6;
 }
 .checkbox-custom:checked + div svg {
     display: block;
+}
+
+/* Loading Screen */
+#loadingScreen {
+    transition: opacity 0.5s ease;
 }
 
 /* Loading Spinner */
@@ -34,3 +39,67 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Settings Collapsible */
+.settings-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+}
+.settings-content.expanded {
+    max-height: 500px;
+    opacity: 1;
+    overflow-y: auto;
+}
+
+/* Choice Buttons */
+.choice-btn {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.choice-btn:hover:not(.choice-disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.choice-btn:active:not(.choice-disabled) {
+    transform: translateY(0);
+}
+.choice-correct {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+    border-color: #34d399 !important;
+    color: white !important;
+    animation: pulse-green 0.6s ease;
+}
+.choice-wrong {
+    background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+    border-color: #f87171 !important;
+    color: white !important;
+    animation: shake 0.4s ease;
+}
+.choice-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+.choice-highlight {
+    border-color: #34d399 !important;
+    box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+}
+
+@keyframes pulse-green {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+/* Update banner animation */
+@keyframes slide-up {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.4s ease-out; }

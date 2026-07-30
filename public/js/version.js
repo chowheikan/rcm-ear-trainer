@@ -1,17 +1,4 @@
-/* ===== version.js =====
- * App version management and update detection.
- * Must be loaded FIRST before all other modules.
- *
- * HOW TO RELEASE A NEW VERSION:
- * 1. Update APP_VERSION below
- * 2. Update version.json with the same version string
- * 3. Update all ?v= query strings in index.html (find & replace old version)
- * 4. Run: firebase deploy --only hosting
- */
-
-const APP_VERSION = "1.0.0";
-
-// Check for updates every 10 minutes
+const APP_VERSION = "1.1.0";
 const VERSION_CHECK_INTERVAL = 10 * 60 * 1000;
 
 function checkForUpdates() {
@@ -22,13 +9,10 @@ function checkForUpdates() {
                 showUpdateBanner(data.version);
             }
         })
-        .catch(() => {
-            // Silently fail — user might be offline
-        });
+        .catch(() => {});
 }
 
 function showUpdateBanner(newVersion) {
-    // Don't show if already showing
     if (document.getElementById('updateBanner')) return;
 
     const banner = document.createElement('div');
@@ -39,7 +23,7 @@ function showUpdateBanner(newVersion) {
     banner.innerHTML = `
         <i class="fas fa-arrow-rotate-right text-blue-400 text-lg"></i>
         <span class="text-slate-200 text-sm font-medium">
-            New version <strong class="text-blue-400">v${newVersion}</strong> available!
+            New version <strong class="text-blue-400">v${newVersion}</strong>
         </span>
         <button onclick="location.reload(true)"
             class="ml-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-full transition-colors">
@@ -54,10 +38,7 @@ function showUpdateBanner(newVersion) {
     document.body.appendChild(banner);
 }
 
-// Start periodic checks after page load
 window.addEventListener('load', () => {
-    // First check after 30 seconds (don't slow down initial load)
     setTimeout(checkForUpdates, 30 * 1000);
-    // Then check periodically
     setInterval(checkForUpdates, VERSION_CHECK_INTERVAL);
 });

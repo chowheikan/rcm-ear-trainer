@@ -1,6 +1,6 @@
 /* ===== chords.js =====
- * Chord trainer logic and data.
- * Depends on: audio.js, notation.js
+ * Chord trainer with multiple choice answering.
+ * Depends on: audio.js, notation.js, stats.js
  */
 
 const chordsData = [
@@ -15,11 +15,7 @@ let currentChordNotes = [];
 
 async function generateAndPlayChord() {
     if (!isAudioInitialized) {
-        const btn = document.getElementById('playChordBtn');
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
         await initAudio();
-        btn.innerHTML = originalHtml;
     }
 
     const checkboxes = document.querySelectorAll('.chord-checkbox:checked');
@@ -32,7 +28,6 @@ async function generateAndPlayChord() {
     const randomId = selectedIds[Math.floor(Math.random() * selectedIds.length)];
     currentChordInfo = chordsData.find(c => c.id === randomId);
 
-    // C3 to E4 root
     const rootMidi = Math.floor(Math.random() * 16) + 48;
 
     currentChordNotes = currentChordInfo.offsets.map(offset => {
@@ -41,13 +36,11 @@ async function generateAndPlayChord() {
 
     // Reset UI
     hideChordAnswer();
-    document.getElementById('chordDisplayArea').classList.remove('hidden');
-    setTimeout(() => {
-        document.getElementById('chordDisplayArea').classList.remove('opacity-0');
-    }, 50);
-
     document.getElementById('replayChordBtn').classList.remove('hidden');
-    document.getElementById('playChordBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next Chord';
+    document.getElementById('playChordBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next';
+
+    // Show choices
+    showChordChoices(selectedIds);
 
     playChordNotes();
 }
@@ -57,10 +50,46 @@ function playChordNotes() {
     sampler.triggerAttackRelease(currentChordNotes, "1n", Tone.now());
 }
 
-function revealChordAnswer() {
+function showChordChoices(selectedIds) {
+    const container = document.getElementById('chordChoicesArea');
+    if (!container) return;
+
+    container.innerHTML = '';
+    container.classList.remove('hidden');
+
+    selectedIds.forEach(id => {
+        const info = chordsData.find(c => c.id === id);
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn px-4 py-2.5 bg-slate-800 border border-slate-600 hover:border-purple-400 rounded-xl font-medium text-sm text-slate-200 transition-all';
+        btn.textContent = info.name;
+        btn.onclick = () => submitChordAnswer(id);
+        container.appendChild(btn);
+    });
+}
+
+async function submitChordAnswer(selectedId) {
     if (!currentChordInfo) return;
 
-    document.getElementById('revealChordBtn').classList.add('hidden');
+    const isCorrect = selectedId === currentChordInfo.id;
+    const container = document.getElementById('chordChoicesArea');
+    const buttons = container.querySelectorAll('.choice-btn');
+
+    buttons.forEach(btn => {
+        btn.classList.add('choice-disabled');
+        if (btn.textContent === currentChordInfo.name) {
+            btn.classList.add(isCorrect ? 'choice-correct' : 'choice-highlight');
+        }
+        if (!isCorrect && btn.textContent === chordsData.find(c => c.id === selectedId).name) {
+            btn.classList.add('choice-wrong');
+        }
+    });
+
+    await recordAnswer('chord', currentChordInfo.id, isCorrect);
+
+    showChordDetails();
+}
+
+function showChordDetails() {
     const answerArea = document.getElementById('chordAnswerArea');
     answerArea.classList.remove('hidden');
     answerArea.classList.add('flex');
@@ -69,15 +98,20 @@ function revealChordAnswer() {
     document.getElementById('chordNotesDisplay').innerHTML = currentChordNotes.map(n => formatNote(n)).join(' - ');
     document.getElementById('chordFeelingDisplay').innerText = currentChordInfo.feeling;
 
-    // Generate Score
     let abcNotes = currentChordNotes.map(toABC).join('');
     let abc = `X:1\nM:4/4\nL:1/4\nK:C\n[${abcNotes}]4 |]`;
     renderScore("chordScore", abc);
 }
 
 function hideChordAnswer() {
-    document.getElementById('revealChordBtn').classList.remove('hidden');
     const answerArea = document.getElementById('chordAnswerArea');
-    answerArea.classList.add('hidden');
-    answerArea.classList.remove('flex');
+    if (answerArea) {
+        answerArea.classList.add('hidden');
+        answerArea.classList.remove('flex');
+    }
+    const choicesArea = document.getElementById('chordChoicesArea');
+    if (choicesArea) {
+        choicesArea.innerHTML = '';
+        choicesArea.classList.add('hidden');
+    }
 }

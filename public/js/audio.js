@@ -1,6 +1,6 @@
 /* ===== audio.js =====
  * Manages Tone.js Sampler (Salamander Grand Piano) and Click Synth (Metronome).
- * Must be loaded BEFORE any trainer modules.
+ * Auto-loads on page entry with a full-page loading screen.
  */
 
 let sampler;
@@ -11,12 +11,6 @@ let clickSynth = null;
 async function initAudio() {
     if (isAudioInitialized || isAudioLoading) return;
     isAudioLoading = true;
-
-    const btnText = document.getElementById('initAudioText');
-    const loader = document.getElementById('initAudioLoader');
-
-    if (btnText) btnText.innerText = "Loading Piano...";
-    if (loader) loader.classList.remove('hidden');
 
     await Tone.start();
 
@@ -53,6 +47,15 @@ async function initAudio() {
     isAudioInitialized = true;
     isAudioLoading = false;
 
-    const overlay = document.getElementById('startOverlay');
-    if (overlay) overlay.style.display = 'none';
+    // Hide loading screen
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.classList.add('opacity-0');
+        setTimeout(() => { loadingScreen.style.display = 'none'; }, 500);
+    }
 }
+
+// Auto-load audio on page entry
+window.addEventListener('load', () => {
+    initAudio();
+});

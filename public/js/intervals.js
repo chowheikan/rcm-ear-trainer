@@ -1,6 +1,6 @@
 /* ===== intervals.js =====
- * Interval trainer logic and data.
- * Depends on: audio.js, notation.js
+ * Interval trainer with multiple choice answering.
+ * Depends on: audio.js, notation.js, stats.js
  */
 
 const intervalsData = {
@@ -15,16 +15,13 @@ const intervalsData = {
 
 // State
 let currentIntervalInfo = null;
+let currentIntervalKey = '';
 let currentNotes = [];
 let currentExamDirection = '';
 
 async function generateAndPlayInterval() {
     if (!isAudioInitialized) {
-        const btn = document.getElementById('playBtn');
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
         await initAudio();
-        btn.innerHTML = originalHtml;
     }
 
     const checkboxes = document.querySelectorAll('.interval-checkbox:checked');
@@ -35,6 +32,7 @@ async function generateAndPlayInterval() {
 
     const selectedIntervals = Array.from(checkboxes).map(cb => cb.value);
     const randomType = selectedIntervals[Math.floor(Math.random() * selectedIntervals.length)];
+    currentIntervalKey = randomType;
     currentIntervalInfo = intervalsData[randomType];
 
     // RCM Level 5 range roughly G3 to G5
@@ -45,19 +43,15 @@ async function generateAndPlayInterval() {
     const topNote = Tone.Frequency(topMidi, "midi").toNote();
 
     currentNotes = [rootNote, topNote];
-
-    // Decide direction randomly for Exam Mode
     currentExamDirection = Math.random() > 0.5 ? 'ascending' : 'descending';
 
     // Reset UI
     hideIntervalAnswer();
-    document.getElementById('displayArea').classList.remove('hidden');
-    setTimeout(() => {
-        document.getElementById('displayArea').classList.remove('opacity-0');
-    }, 50);
-
     document.getElementById('replayBtn').classList.remove('hidden');
-    document.getElementById('playBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next Interval';
+    document.getElementById('playBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next';
+
+    // Show choices
+    showIntervalChoices(selectedIntervals);
 
     playIntervalNotes();
 }
@@ -79,7 +73,6 @@ function playIntervalNotes() {
     } else if (mode === 'harmonic') {
         sampler.triggerAttackRelease([n1, n2], "1n", now);
     } else if (mode === 'exam') {
-        // Exam mode: Melodic -> pause -> Harmonic
         if (currentExamDirection === 'ascending') {
             sampler.triggerAttackRelease(n1, "2n", now);
             sampler.triggerAttackRelease(n2, "2n", now + 1);
@@ -91,10 +84,49 @@ function playIntervalNotes() {
     }
 }
 
-function revealIntervalAnswer() {
+function showIntervalChoices(selectedKeys) {
+    const container = document.getElementById('intervalChoicesArea');
+    if (!container) return;
+
+    container.innerHTML = '';
+    container.classList.remove('hidden');
+
+    selectedKeys.forEach(key => {
+        const info = intervalsData[key];
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn px-4 py-2.5 bg-slate-800 border border-slate-600 hover:border-blue-400 rounded-xl font-medium text-sm text-slate-200 transition-all';
+        btn.textContent = info.name;
+        btn.onclick = () => submitIntervalAnswer(key);
+        container.appendChild(btn);
+    });
+}
+
+async function submitIntervalAnswer(selectedKey) {
     if (!currentIntervalInfo) return;
 
-    document.getElementById('revealBtn').classList.add('hidden');
+    const isCorrect = selectedKey === currentIntervalKey;
+    const container = document.getElementById('intervalChoicesArea');
+    const buttons = container.querySelectorAll('.choice-btn');
+
+    // Disable all buttons
+    buttons.forEach(btn => {
+        btn.classList.add('choice-disabled');
+        if (btn.textContent === intervalsData[currentIntervalKey].name) {
+            btn.classList.add(isCorrect ? 'choice-correct' : 'choice-highlight');
+        }
+        if (!isCorrect && btn.textContent === intervalsData[selectedKey].name) {
+            btn.classList.add('choice-wrong');
+        }
+    });
+
+    // Record stats
+    await recordAnswer('interval', currentIntervalKey, isCorrect);
+
+    // Show answer details
+    showIntervalDetails();
+}
+
+function showIntervalDetails() {
     const answerArea = document.getElementById('answerArea');
     answerArea.classList.remove('hidden');
     answerArea.classList.add('flex');
@@ -140,8 +172,14 @@ function revealIntervalAnswer() {
 }
 
 function hideIntervalAnswer() {
-    document.getElementById('revealBtn').classList.remove('hidden');
     const answerArea = document.getElementById('answerArea');
-    answerArea.classList.add('hidden');
-    answerArea.classList.remove('flex');
+    if (answerArea) {
+        answerArea.classList.add('hidden');
+        answerArea.classList.remove('flex');
+    }
+    const choicesArea = document.getElementById('intervalChoicesArea');
+    if (choicesArea) {
+        choicesArea.innerHTML = '';
+        choicesArea.classList.add('hidden');
+    }
 }
