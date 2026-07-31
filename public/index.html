@@ -6,6 +6,8 @@
     <title>RCM Ear Training Hub — Level 5</title>
     <meta name="description" content="Interactive ear training tool for RCM Level 5 preparation. Practice intervals, chords, chord progressions, and melodic playback with a high-quality piano sampler.">
 
+    <!-- Inline theme init — runs before CSS renders to prevent flash -->
+    <script>(function(){var t=localStorage.getItem('rcm_theme');if(t==='light')document.documentElement.classList.add('light-mode');})()</script>
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -97,8 +99,13 @@
                     </h1>
                     <p class="text-slate-500 text-xs md:text-sm">Level 5 Preparation</p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
                     <div id="statsDisplay" class="flex items-center gap-1"></div>
+                    <!-- Theme toggle -->
+                    <button id="themeToggleBtn" onclick="toggleTheme()" title="Switch to light mode"
+                        class="w-8 h-8 flex items-center justify-center glass-panel rounded-lg hover:scale-110 transition-all">
+                        <i class="fas fa-sun text-slate-400"></i>
+                    </button>
                     <div id="authArea"></div>
                 </div>
             </div>

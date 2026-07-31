@@ -1,7 +1,32 @@
-/* ===== main.js =====
- * Tab switching + Settings toggle + play lock.
- * Loaded last — all other modules must be loaded before this.
- */
+/* ===== main.js ===== */
+
+// ---- Theme (runs immediately to avoid flash) ----
+(function initTheme() {
+    const saved = localStorage.getItem('rcm_theme') || 'dark';
+    if (saved === 'light') document.documentElement.classList.add('light-mode');
+})();
+
+function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light-mode');
+    localStorage.setItem('rcm_theme', isLight ? 'light' : 'dark');
+    updateThemeBtn(isLight);
+}
+
+function updateThemeBtn(isLight) {
+    const btn = document.getElementById('themeToggleBtn');
+    if (!btn) return;
+    btn.innerHTML = isLight
+        ? '<i class="fas fa-moon text-slate-600"></i>'
+        : '<i class="fas fa-sun text-slate-400"></i>';
+    btn.title = isLight ? 'Switch to dark mode' : 'Switch to light mode';
+}
+
+window.addEventListener('load', () => {
+    // Sync button icon with saved theme
+    const isLight = document.documentElement.classList.contains('light-mode');
+    updateThemeBtn(isLight);
+});
+
 
 // Track active tab for the nav settings cog
 let _activeTab = 'interval';

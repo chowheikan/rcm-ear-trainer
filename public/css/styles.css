@@ -1,36 +1,153 @@
-/* Hide scrollbar but keep scroll functionality */
+/* ===== THEME VARIABLES ===== */
+:root {
+    --bg-page:       #0f172a;
+    --bg-card:       rgba(30, 41, 59, 0.7);
+    --bg-input:      #1e293b;
+    --bg-hover:      #334155;
+    --bg-overlay:    #0f172a;
+    --text-primary:  #f1f5f9;
+    --text-secondary:#94a3b8;
+    --text-muted:    #64748b;
+    --border:        rgba(255,255,255,0.1);
+    --border-solid:  #334155;
+    --score-bg:      #f1f5f9;
+    --score-text:    #0f172a;
+}
+
+html.light-mode {
+    --bg-page:       #f0f4f8;
+    --bg-card:       rgba(255,255,255,0.85);
+    --bg-input:      #ffffff;
+    --bg-hover:      #e2e8f0;
+    --bg-overlay:    #ffffff;
+    --text-primary:  #0f172a;
+    --text-secondary:#475569;
+    --text-muted:    #94a3b8;
+    --border:        rgba(0,0,0,0.1);
+    --border-solid:  #cbd5e1;
+    --score-bg:      #ffffff;
+    --score-text:    #0f172a;
+}
+
+/* ===== BASE ===== */
+/* Hide scrollbar but keep scroll */
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-
-    background-color: #0f172a;
-    color: #f1f5f9;
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     font-family: 'Inter', system-ui, sans-serif;
     overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* ===== GLASS PANEL ===== */
 .glass-panel {
-    background: rgba(30, 41, 59, 0.7);
+    background: var(--bg-card);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-/* Custom Checkbox Logic */
-.checkbox-custom:checked + div {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
+/* ===== LIGHT MODE TAILWIND OVERRIDES ===== */
+
+/* Page & card backgrounds */
+html.light-mode body { background-color: var(--bg-page); color: var(--text-primary); }
+
+/* Dark panels → white cards */
+html.light-mode .bg-slate-900,
+html.light-mode [class*="bg-slate-900"] { background-color: #f0f4f8 !important; }
+html.light-mode .bg-slate-800\/80,
+html.light-mode [class*="bg-slate-800"] { background-color: #ffffff !important; }
+html.light-mode .bg-slate-700,
+html.light-mode [class*="bg-slate-700"] { background-color: #e2e8f0 !important; }
+
+/* Borders */
+html.light-mode [class*="border-slate-600"],
+html.light-mode [class*="border-slate-700"] { border-color: #cbd5e1 !important; }
+
+/* Text colours */
+html.light-mode [class*="text-slate-200"],
+html.light-mode [class*="text-slate-300"] { color: #1e293b !important; }
+html.light-mode [class*="text-slate-400"] { color: #475569 !important; }
+html.light-mode [class*="text-slate-500"] { color: #64748b !important; }
+html.light-mode [class*="text-slate-600"] { color: #94a3b8 !important; }
+html.light-mode .text-white { color: #0f172a !important; }
+
+/* Tab bar buttons (inactive) */
+html.light-mode #tab-interval,
+html.light-mode #tab-chord,
+html.light-mode #tab-progression,
+html.light-mode #tab-playback {
+    background-color: #e2e8f0;
+    color: #475569;
 }
-.checkbox-custom:checked + div svg {
-    display: block;
+html.light-mode #tab-interval.bg-blue-600,
+html.light-mode #tab-chord.bg-blue-600,
+html.light-mode #tab-progression.bg-blue-600,
+html.light-mode #tab-playback.bg-blue-600 {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
 }
 
-/* Loading Screen */
-#loadingScreen {
-    transition: opacity 0.5s ease;
+/* Settings cog + nav buttons */
+html.light-mode #navSettingsBtn { background: #e2e8f0; border-color: #cbd5e1; color: #475569; }
+
+/* Choice buttons */
+html.light-mode .choice-btn {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+}
+html.light-mode .choice-btn:hover:not(.choice-disabled) {
+    border-color: #3b82f6 !important;
+    background-color: #eff6ff !important;
 }
 
-/* Loading Spinner */
+/* Score areas stay light in both themes */
+html.light-mode [id$="Score"] { background-color: #ffffff !important; border: 1px solid #e2e8f0; }
+
+/* Inputs / selects */
+html.light-mode select,
+html.light-mode [class*="bg-slate-700"] select { background-color: #ffffff !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
+
+/* Stats overlay */
+html.light-mode #statsOverlay > div:last-child { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+html.light-mode #overlayContent { background-color: #ffffff; }
+
+/* Accent colour blocks in answer panels */
+html.light-mode .bg-blue-900\/30   { background-color: #eff6ff !important; }
+html.light-mode .bg-indigo-900\/30 { background-color: #eef2ff !important; }
+html.light-mode .bg-pink-900\/30   { background-color: #fdf2f8 !important; }
+html.light-mode .bg-orange-900\/30 { background-color: #fff7ed !important; }
+html.light-mode .bg-emerald-900\/30{ background-color: #ecfdf5 !important; }
+html.light-mode .border-blue-500\/30   { border-color: #bfdbfe !important; }
+html.light-mode .border-indigo-500\/30 { border-color: #c7d2fe !important; }
+html.light-mode .border-pink-500\/30   { border-color: #fbcfe8 !important; }
+html.light-mode .border-orange-500\/30 { border-color: #fed7aa !important; }
+html.light-mode .border-emerald-500\/30{ border-color: #a7f3d0 !important; }
+
+/* Loading screen */
+html.light-mode #loadingScreen { background-color: #f0f4f8 !important; }
+html.light-mode #loadingText   { color: #0f172a !important; }
+html.light-mode #loadingSubtext{ color: #64748b !important; }
+html.light-mode #loadingBar    { background: linear-gradient(to right, #3b82f6, #10b981) !important; }
+
+/* Update banner */
+html.light-mode #updateBanner  { background: rgba(248,250,252,0.95) !important; }
+
+/* Header gradient stays */
+html.light-mode h1 { filter: none; }
+
+/* ===== CUSTOM CHECKBOX ===== */
+.checkbox-custom:checked + div { background-color: #3b82f6; border-color: #3b82f6; }
+.checkbox-custom:checked + div svg { display: block; }
+html.light-mode .checkbox-custom + div { border-color: #94a3b8; }
+
+/* ===== LOADING SCREEN ===== */
+#loadingScreen { transition: opacity 0.5s ease; }
 .loader {
     border: 3px solid rgba(255,255,255,0.1);
     border-bottom-color: #3b82f6;
@@ -44,7 +161,7 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Settings Collapsible */
+/* ===== SETTINGS COLLAPSIBLE ===== */
 .settings-content {
     max-height: 0;
     overflow: hidden;
@@ -57,18 +174,14 @@
     overflow-y: auto;
 }
 
-/* Choice Buttons */
-.choice-btn {
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
+/* ===== CHOICE BUTTONS ===== */
+.choice-btn { transition: all 0.2s ease; cursor: pointer; }
 .choice-btn:hover:not(.choice-disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-.choice-btn:active:not(.choice-disabled) {
-    transform: translateY(0);
-}
+.choice-btn:active:not(.choice-disabled) { transform: translateY(0); }
+
 .choice-correct {
     background: linear-gradient(135deg, #059669, #10b981) !important;
     border-color: #34d399 !important;
@@ -81,10 +194,7 @@
     color: white !important;
     animation: shake 0.4s ease;
 }
-.choice-disabled {
-    pointer-events: none;
-    opacity: 0.5;
-}
+.choice-disabled { pointer-events: none; opacity: 0.5; }
 .choice-highlight {
     border-color: #34d399 !important;
     box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
@@ -101,9 +211,9 @@
     75% { transform: translateX(4px); }
 }
 
-/* Update banner animation */
+/* ===== UPDATE BANNER ===== */
 @keyframes slide-up {
     from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 .animate-slide-up { animation: slide-up 0.4s ease-out; }
