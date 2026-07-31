@@ -21,7 +21,7 @@ let currentExamDirection = '';
 
 async function generateAndPlayInterval() {
     if (!isAudioInitialized) {
-        await initAudio();
+        await initAudio(); // called from button click = user gesture
     }
 
     const checkboxes = document.querySelectorAll('.interval-checkbox:checked');

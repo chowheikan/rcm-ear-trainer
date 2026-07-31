@@ -26,10 +26,15 @@
 <body class="min-h-screen p-3 md:p-8 flex flex-col items-center">
 
     <!-- ========== LOADING SCREEN ========== -->
-    <div id="loadingScreen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center">
-        <div class="loader w-12 h-12 mb-4"></div>
-        <h2 class="text-xl font-bold text-white mb-2">Loading Piano...</h2>
-        <p class="text-slate-400 text-sm">Preparing acoustic samples</p>
+    <div id="loadingScreen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center px-8">
+        <div class="text-5xl mb-6">🎹</div>
+        <h2 id="loadingText" class="text-lg font-bold text-white mb-1">Loading Piano... 0/12</h2>
+        <p id="loadingSubtext" class="text-slate-500 text-xs mb-6">Fetching samples...</p>
+        <!-- Progress bar: CSS animation guarantees it moves regardless of JS repaint timing -->
+        <div class="w-full max-w-xs bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div id="loadingBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full" style="width:0%; transition: width 0.4s ease"></div>
+        </div>
+        <p class="text-slate-600 text-xs mt-4">Loading acoustic piano samples</p>
     </div>
 
     <!-- ========== STATS OVERLAY ========== -->
@@ -119,7 +124,7 @@
         <div id="tab-content-interval" class="space-y-3">
 
             <!-- Settings Toggle -->
-            <button onclick="toggleSettings('interval')" class="w-full flex items-center justify-between px-4 py-2 glass-panel rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors">
+            <button onclick="toggleSettings('interval')" class="flex items-center gap-2 px-3 py-1.5 glass-panel rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors ml-auto">
                 <span><i class="fas fa-cog mr-2"></i>Settings</span>
                 <i id="settings-arrow-interval" class="fas fa-chevron-down text-xs transition-transform duration-300"></i>
             </button>
@@ -230,7 +235,7 @@
         <!-- ==================== CHORD TAB ==================== -->
         <div id="tab-content-chord" class="space-y-3 hidden">
 
-            <button onclick="toggleSettings('chord')" class="w-full flex items-center justify-between px-4 py-2 glass-panel rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors">
+            <button onclick="toggleSettings('chord')" class="flex items-center gap-2 px-3 py-1.5 glass-panel rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors ml-auto">
                 <span><i class="fas fa-cog mr-2"></i>Settings</span>
                 <i id="settings-arrow-chord" class="fas fa-chevron-down text-xs transition-transform duration-300"></i>
             </button>
@@ -294,7 +299,7 @@
         <!-- ==================== PROGRESSION TAB ==================== -->
         <div id="tab-content-progression" class="space-y-3 hidden">
 
-            <button onclick="toggleSettings('progression')" class="w-full flex items-center justify-between px-4 py-2 glass-panel rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors">
+            <button onclick="toggleSettings('progression')" class="flex items-center gap-2 px-3 py-1.5 glass-panel rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors ml-auto">
                 <span><i class="fas fa-cog mr-2"></i>Settings</span>
                 <i id="settings-arrow-progression" class="fas fa-chevron-down text-xs transition-transform duration-300"></i>
             </button>
@@ -351,7 +356,7 @@
         <!-- ==================== PLAYBACK TAB ==================== -->
         <div id="tab-content-playback" class="space-y-3 hidden">
 
-            <button onclick="toggleSettings('playback')" class="w-full flex items-center justify-between px-4 py-2 glass-panel rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors">
+            <button onclick="toggleSettings('playback')" class="flex items-center gap-2 px-3 py-1.5 glass-panel rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors ml-auto">
                 <span><i class="fas fa-cog mr-2"></i>Settings</span>
                 <i id="settings-arrow-playback" class="fas fa-chevron-down text-xs transition-transform duration-300"></i>
             </button>
@@ -482,3 +487,4 @@
     <script src="js/main.js?v=1.1.1"></script>
 </body>
 </html>
+

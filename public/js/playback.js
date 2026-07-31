@@ -60,9 +60,10 @@ let currentPlaybackInfo = { key: null, time: null, melody: [] };
 
 async function generateAndPlayPlayback() {
     if (!isAudioInitialized) {
+        // Called from button click = user gesture, needed for Tone.start()
         const btn = document.getElementById('playPlaybackBtn');
         const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Piano...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Starting...';
         await initAudio();
         btn.innerHTML = originalHtml;
     }

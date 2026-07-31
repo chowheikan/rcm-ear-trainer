@@ -14,7 +14,7 @@ let currentProgressionNotes = [];
 
 async function generateAndPlayProgression() {
     if (!isAudioInitialized) {
-        await initAudio();
+        await initAudio(); // called from button click = user gesture
     }
 
     const checkboxes = document.querySelectorAll('.progression-checkbox:checked');

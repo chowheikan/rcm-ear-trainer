@@ -15,7 +15,7 @@ let currentChordNotes = [];
 
 async function generateAndPlayChord() {
     if (!isAudioInitialized) {
-        await initAudio();
+        await initAudio(); // called from button click = user gesture
     }
 
     const checkboxes = document.querySelectorAll('.chord-checkbox:checked');
