@@ -1,5 +1,5 @@
-const APP_VERSION = "1.1.1";
-const VERSION_CHECK_INTERVAL = 10 * 60 * 1000;
+const APP_VERSION = "1.2.0";
+const VERSION_CHECK_INTERVAL = 2 * 60 * 1000; // check every 2 minutes
 
 function checkForUpdates() {
     fetch('/version.json?_t=' + Date.now())
@@ -39,6 +39,6 @@ function showUpdateBanner(newVersion) {
 }
 
 window.addEventListener('load', () => {
-    setTimeout(checkForUpdates, 30 * 1000);
-    setInterval(checkForUpdates, VERSION_CHECK_INTERVAL);
+    setTimeout(checkForUpdates, 5 * 1000);          // first check after 5s
+    setInterval(checkForUpdates, VERSION_CHECK_INTERVAL); // then every 2 min
 });
