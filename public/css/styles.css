@@ -1,4 +1,8 @@
-body {
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+
     background-color: #0f172a;
     color: #f1f5f9;
     font-family: 'Inter', system-ui, sans-serif;

@@ -1,15 +1,30 @@
 /* ===== main.js =====
- * Tab switching + Settings toggle.
+ * Tab switching + Settings toggle + play lock.
  * Loaded last — all other modules must be loaded before this.
  */
 
-// Tab Switching
+// Track active tab for the nav settings cog
+let _activeTab = 'interval';
+
+// ---- Play lock (prevents double-click spam) ----
+let _playLocked = false;
+
+function acquirePlayLock() {
+    if (_playLocked) return false;
+    _playLocked = true;
+    return true;
+}
+
+function releasePlayLock(delayMs = 700) {
+    setTimeout(() => { _playLocked = false; }, delayMs);
+}
+
+// ---- Tab Switching ----
 function switchTab(tabId) {
-    // Cut off any playing audio when switching tabs
     if (typeof stopAllPlayback === 'function') stopAllPlayback();
+    _activeTab = tabId;
 
     const tabs = ['interval', 'chord', 'progression', 'playback'];
-
     tabs.forEach(t => {
         document.getElementById('tab-content-' + t).classList.add('hidden');
         const btn = document.getElementById('tab-' + t);
@@ -21,22 +36,22 @@ function switchTab(tabId) {
     activeBtn.className = 'px-3 py-1.5 text-sm bg-blue-600 text-white rounded-full font-semibold shadow-lg shadow-blue-500/30 transition-all whitespace-nowrap';
 }
 
-// Settings Toggle
+// ---- Settings Toggle (per-tab via nav cog) ----
+function toggleActiveTabSettings() {
+    toggleSettings(_activeTab);
+}
+
 function toggleSettings(tabId) {
     const content = document.getElementById('settings-content-' + tabId);
-    const arrow = document.getElementById('settings-arrow-' + tabId);
     if (!content) return;
-
     if (content.classList.contains('expanded')) {
         content.classList.remove('expanded');
-        if (arrow) arrow.style.transform = 'rotate(0deg)';
     } else {
         content.classList.add('expanded');
-        if (arrow) arrow.style.transform = 'rotate(180deg)';
     }
 }
 
-// Initialize stats display on load
+// ---- Init stats on load ----
 window.addEventListener('load', () => {
     if (typeof renderStatsBar === 'function') {
         setTimeout(renderStatsBar, 500);

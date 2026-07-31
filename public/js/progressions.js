@@ -1,6 +1,6 @@
 /* ===== progressions.js =====
- * Chord progression trainer with multiple choice answering.
- * Depends on: audio.js, notation.js, stats.js
+ * Chord progression trainer with multiple choice answering + compare panel.
+ * Depends on: audio.js, notation.js, stats.js, main.js (play lock)
  */
 
 const progressionsData = [
@@ -11,14 +11,18 @@ const progressionsData = [
 // State
 let currentProgressionInfo = null;
 let currentProgressionNotes = [];
+let currentProgressionRootMidi = 0; // for compare panel
 
 async function generateAndPlayProgression() {
+    if (!acquirePlayLock()) return;
+
     if (!isAudioInitialized) {
         await initAudio(); // called from button click = user gesture
     }
 
     const checkboxes = document.querySelectorAll('.progression-checkbox:checked');
     if (checkboxes.length === 0) {
+        releasePlayLock(0);
         alert("Please select at least one progression!");
         return;
     }
@@ -27,43 +31,42 @@ async function generateAndPlayProgression() {
     const randomId = selectedIds[Math.floor(Math.random() * selectedIds.length)];
     currentProgressionInfo = progressionsData.find(p => p.id === randomId);
 
-    const rootMidi = Math.floor(Math.random() * 5) + 48;
-    currentProgressionNotes = [];
-
-    const chordI = [rootMidi, rootMidi + 12, rootMidi + 16, rootMidi + 19].map(m => Tone.Frequency(m, "midi").toNote());
-    currentProgressionNotes.push(chordI);
-
-    if (currentProgressionInfo.id === 'I-IV-I') {
-        const ivRoot = rootMidi + 5;
-        const chordIV = [ivRoot, ivRoot + 12, ivRoot + 16, ivRoot + 19].map(m => Tone.Frequency(m, "midi").toNote());
-        currentProgressionNotes.push(chordIV);
-    } else {
-        const vRoot = rootMidi + 7;
-        const chordV = [vRoot, vRoot + 12, vRoot + 16, vRoot + 19].map(m => Tone.Frequency(m, "midi").toNote());
-        currentProgressionNotes.push(chordV);
-    }
-
-    currentProgressionNotes.push(chordI);
-
-    // Cut off any previous playback
-    stopAllPlayback();
+    currentProgressionRootMidi = Math.floor(Math.random() * 5) + 48;
+    currentProgressionNotes = buildProgressionNotes(currentProgressionInfo.id, currentProgressionRootMidi);
 
     // Reset UI
     hideProgressionAnswer();
     document.getElementById('replayProgressionBtn').classList.remove('hidden');
     document.getElementById('playProgressionBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next';
 
-    // Show choices
     showProgressionChoices(selectedIds);
-
     playProgressionNotes();
+    releasePlayLock();
+}
+
+function buildProgressionNotes(id, rootMidi) {
+    const chordI = [rootMidi, rootMidi + 12, rootMidi + 16, rootMidi + 19].map(m =>
+        Tone.Frequency(m, "midi").toNote()
+    );
+    let middle;
+    if (id === 'I-IV-I') {
+        const ivRoot = rootMidi + 5;
+        middle = [ivRoot, ivRoot + 12, ivRoot + 16, ivRoot + 19].map(m =>
+            Tone.Frequency(m, "midi").toNote()
+        );
+    } else {
+        const vRoot = rootMidi + 7;
+        middle = [vRoot, vRoot + 12, vRoot + 16, vRoot + 19].map(m =>
+            Tone.Frequency(m, "midi").toNote()
+        );
+    }
+    return [chordI, middle, chordI];
 }
 
 function playProgressionNotes() {
     if (!sampler || !sampler.loaded || currentProgressionNotes.length === 0) return;
     stopAllPlayback();
     const now = Tone.now();
-
     sampler.triggerAttackRelease(currentProgressionNotes[0], "2n", now);
     sampler.triggerAttackRelease(currentProgressionNotes[1], "2n", now + 1.2);
     sampler.triggerAttackRelease(currentProgressionNotes[2], "1n", now + 2.4);
@@ -72,7 +75,6 @@ function playProgressionNotes() {
 function showProgressionChoices(selectedIds) {
     const container = document.getElementById('progressionChoicesArea');
     if (!container) return;
-
     container.innerHTML = '';
     container.classList.remove('hidden');
 
@@ -104,7 +106,6 @@ async function submitProgressionAnswer(selectedId) {
     });
 
     await recordAnswer('progression', currentProgressionInfo.id, selectedId, isCorrect);
-
     showProgressionDetails();
 }
 
@@ -126,19 +127,49 @@ function showProgressionDetails() {
     let abc = `X:1\nM:4/4\nL:1/4\n%%staves {1 2}\nV:1 clef=treble\nV:2 clef=bass\nK:C\n`;
     abc += `[V:1] [${treble1}]2 [${treble2}]2 | [${treble3}]4 |]\n`;
     abc += `[V:2] ${bass1}2 ${bass2}2 | ${bass3}4 |]`;
-
     renderScore("progressionScore", abc);
+
+    // Show compare panel (always show both, even if only 1 selected)
+    showProgressionCompare();
+}
+
+function showProgressionCompare() {
+    const area = document.getElementById('progressionCompareArea');
+    const btnContainer = document.getElementById('progressionCompareButtons');
+    if (!area || !btnContainer) return;
+
+    area.classList.remove('hidden');
+    btnContainer.innerHTML = '';
+
+    progressionsData.forEach(info => {
+        const isAnswer = info.id === currentProgressionInfo.id;
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1.5 text-xs rounded-lg border transition-all ${
+            isAnswer
+                ? 'border-emerald-500 text-emerald-300 bg-emerald-900/30 font-semibold'
+                : 'border-slate-600 text-slate-300 bg-slate-800 hover:border-amber-400'
+        }`;
+        btn.innerHTML = `<i class="fas fa-play text-[10px] mr-1"></i>${info.name}`;
+        btn.onclick = () => playCompareProgression(info.id);
+        btnContainer.appendChild(btn);
+    });
+}
+
+function playCompareProgression(id) {
+    if (!sampler || !sampler.loaded) return;
+    stopAllPlayback();
+    const notes = buildProgressionNotes(id, currentProgressionRootMidi);
+    const now = Tone.now();
+    sampler.triggerAttackRelease(notes[0], "2n", now);
+    sampler.triggerAttackRelease(notes[1], "2n", now + 1.2);
+    sampler.triggerAttackRelease(notes[2], "1n", now + 2.4);
 }
 
 function hideProgressionAnswer() {
     const answerArea = document.getElementById('progressionAnswerArea');
-    if (answerArea) {
-        answerArea.classList.add('hidden');
-        answerArea.classList.remove('flex');
-    }
+    if (answerArea) { answerArea.classList.add('hidden'); answerArea.classList.remove('flex'); }
     const choicesArea = document.getElementById('progressionChoicesArea');
-    if (choicesArea) {
-        choicesArea.innerHTML = '';
-        choicesArea.classList.add('hidden');
-    }
+    if (choicesArea) { choicesArea.innerHTML = ''; choicesArea.classList.add('hidden'); }
+    const compareArea = document.getElementById('progressionCompareArea');
+    if (compareArea) compareArea.classList.add('hidden');
 }

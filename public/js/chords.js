@@ -1,6 +1,6 @@
 /* ===== chords.js =====
- * Chord trainer with multiple choice answering.
- * Depends on: audio.js, notation.js, stats.js
+ * Chord trainer with multiple choice answering + compare panel.
+ * Depends on: audio.js, notation.js, stats.js, main.js (play lock)
  */
 
 const chordsData = [
@@ -12,14 +12,18 @@ const chordsData = [
 // State
 let currentChordInfo = null;
 let currentChordNotes = [];
+let currentChordRootMidi = 0; // for compare panel
 
 async function generateAndPlayChord() {
+    if (!acquirePlayLock()) return;
+
     if (!isAudioInitialized) {
         await initAudio(); // called from button click = user gesture
     }
 
     const checkboxes = document.querySelectorAll('.chord-checkbox:checked');
     if (checkboxes.length === 0) {
+        releasePlayLock(0);
         alert("Please select at least one chord type!");
         return;
     }
@@ -28,24 +32,19 @@ async function generateAndPlayChord() {
     const randomId = selectedIds[Math.floor(Math.random() * selectedIds.length)];
     currentChordInfo = chordsData.find(c => c.id === randomId);
 
-    const rootMidi = Math.floor(Math.random() * 16) + 48;
-
-    currentChordNotes = currentChordInfo.offsets.map(offset => {
-        return Tone.Frequency(rootMidi + offset, "midi").toNote();
-    });
-
-    // Cut off any previous playback
-    stopAllPlayback();
+    currentChordRootMidi = Math.floor(Math.random() * 16) + 48;
+    currentChordNotes = currentChordInfo.offsets.map(offset =>
+        Tone.Frequency(currentChordRootMidi + offset, "midi").toNote()
+    );
 
     // Reset UI
     hideChordAnswer();
     document.getElementById('replayChordBtn').classList.remove('hidden');
     document.getElementById('playChordBtn').innerHTML = '<i class="fas fa-step-forward"></i> Next';
 
-    // Show choices
     showChordChoices(selectedIds);
-
     playChordNotes();
+    releasePlayLock();
 }
 
 function playChordNotes() {
@@ -57,7 +56,6 @@ function playChordNotes() {
 function showChordChoices(selectedIds) {
     const container = document.getElementById('chordChoicesArea');
     if (!container) return;
-
     container.innerHTML = '';
     container.classList.remove('hidden');
 
@@ -89,7 +87,6 @@ async function submitChordAnswer(selectedId) {
     });
 
     await recordAnswer('chord', currentChordInfo.id, selectedId, isCorrect);
-
     showChordDetails();
 }
 
@@ -105,17 +102,53 @@ function showChordDetails() {
     let abcNotes = currentChordNotes.map(toABC).join('');
     let abc = `X:1\nM:4/4\nL:1/4\nK:C\n[${abcNotes}]4 |]`;
     renderScore("chordScore", abc);
+
+    // Show compare panel
+    showChordCompare();
+}
+
+function showChordCompare() {
+    const selectedIds = Array.from(
+        document.querySelectorAll('.chord-checkbox:checked')
+    ).map(cb => cb.value);
+
+    const area = document.getElementById('chordCompareArea');
+    const btnContainer = document.getElementById('chordCompareButtons');
+    if (!area || !btnContainer || selectedIds.length < 2) return;
+
+    area.classList.remove('hidden');
+    btnContainer.innerHTML = '';
+
+    selectedIds.forEach(id => {
+        const info = chordsData.find(c => c.id === id);
+        const isAnswer = id === currentChordInfo.id;
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1.5 text-xs rounded-lg border transition-all ${
+            isAnswer
+                ? 'border-emerald-500 text-emerald-300 bg-emerald-900/30 font-semibold'
+                : 'border-slate-600 text-slate-300 bg-slate-800 hover:border-purple-400'
+        }`;
+        btn.innerHTML = `<i class="fas fa-play text-[10px] mr-1"></i>${info.name}`;
+        btn.onclick = () => playCompareChord(id);
+        btnContainer.appendChild(btn);
+    });
+}
+
+function playCompareChord(id) {
+    if (!sampler || !sampler.loaded) return;
+    stopAllPlayback();
+    const info = chordsData.find(c => c.id === id);
+    const notes = info.offsets.map(offset =>
+        Tone.Frequency(currentChordRootMidi + offset, "midi").toNote()
+    );
+    sampler.triggerAttackRelease(notes, "1n", Tone.now());
 }
 
 function hideChordAnswer() {
     const answerArea = document.getElementById('chordAnswerArea');
-    if (answerArea) {
-        answerArea.classList.add('hidden');
-        answerArea.classList.remove('flex');
-    }
+    if (answerArea) { answerArea.classList.add('hidden'); answerArea.classList.remove('flex'); }
     const choicesArea = document.getElementById('chordChoicesArea');
-    if (choicesArea) {
-        choicesArea.innerHTML = '';
-        choicesArea.classList.add('hidden');
-    }
+    if (choicesArea) { choicesArea.innerHTML = ''; choicesArea.classList.add('hidden'); }
+    const compareArea = document.getElementById('chordCompareArea');
+    if (compareArea) compareArea.classList.add('hidden');
 }
